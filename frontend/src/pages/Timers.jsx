@@ -177,7 +177,7 @@ export default function Timers() {
     cargarDatos()
   }
 
-  const sesionesHoyCompletadas = hoy?.sesiones || []
+  const sesionesHoyCompletadas = hoy?.sesiones ? [...hoy.sesiones].reverse() : []
   const totalHoy = hoy?.total_segundos || 0
 
   return (
@@ -211,7 +211,7 @@ export default function Timers() {
               </div>
             ) : (
               <div className="timers-cards">
-                {activas.map(sesion => (
+                {[...activas].sort((a,b) => new Date(b.iniciado_en) - new Date(a.iniciado_en)).map(sesion => (
                   <div key={sesion.id} className={`timers-card${sesion.paused_at ? ' timers-card--pausada' : ''}`}>
                     {/* Portada pequeña */}
                     <div className="timers-card__portada">
