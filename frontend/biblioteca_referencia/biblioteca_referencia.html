@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&amp;family=EB+Garamond:ital,wght@0,400;0,700;1,400&amp;family=Newsreader:ital,wght@0,300;0,400;1,300&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .font-cinzel { font-family: 'Cinzel', serif; }
+        .font-garamond { font-family: 'EB Garamond', serif; }
+        .font-newsreader { font-family: 'Newsreader', serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #0d0d0d;
+            color: #e5e2e1;
+        }
+        .noir-card {
+            background-color: #0a0a0a;
+            border: 0.5px solid #4d4637;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .noir-card:hover {
+            background-color: #1a1a1a;
+            border-color: #c9a84c;
+        }
+        .geometric-ornament {
+            color: #5a4a20;
+            font-size: 0.75rem;
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0d0d0d;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3a2e0e;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #c9a84c;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#e6c364",
+                        "primary-container": "#c9a84c",
+                        "on-primary": "#3d2e00",
+                        "background": "#0d0d0d",
+                        "surface": "#131313",
+                        "outline-variant": "#4d4637",
+                        "surface-container-lowest": "#0e0e0e",
+                    },
+                    fontFamily: {
+                        "headline": ["Cinzel"],
+                        "body": ["EB Garamond"],
+                        "label": ["Newsreader"]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="font-garamond antialiased overflow-x-hidden">
+<!-- TopAppBar -->
+<header class="bg-[#0d0d0d] dark:bg-[#0d0d0d] flex justify-between items-center px-12 py-6 w-full max-w-none border-b-[0.5px] border-[#4d4637] sticky top-0 z-50">
+<div class="text-2xl font-bold uppercase tracking-widest text-[#c9a84c] dark:text-[#c9a84c] font-cinzel">
+            EL ARCHIVO NOIR
+        </div>
+<nav class="hidden md:flex items-center gap-10">
+<a class="text-[#c9a84c] border-b-2 border-[#c9a84c] pb-1 font-cinzel text-sm uppercase tracking-[0.1em]" href="#">LA BIBLIOTECA</a>
+<a class="text-[#9a8040] hover:text-[#c9a84c] transition-colors font-cinzel text-sm uppercase tracking-[0.1em]" href="#">REGISTRAR LIBRO</a>
+<a class="text-[#9a8040] hover:text-[#c9a84c] transition-colors font-cinzel text-sm uppercase tracking-[0.1em]" href="#">LAS INSTALACIONES</a>
+</nav>
+<div class="flex items-center gap-6 text-[#c9a84c]">
+<span class="material-symbols-outlined cursor-pointer hover:bg-[#1a1a1a] p-2 transition-all duration-300">account_circle</span>
+<span class="material-symbols-outlined cursor-pointer hover:bg-[#1a1a1a] p-2 transition-all duration-300">settings</span>
+</div>
+</header>
+<main class="min-h-screen pt-12 pb-24 px-12 max-w-7xl mx-auto">
+<!-- Dashboard Header -->
+<section class="mb-12 text-center">
+<h1 class="font-cinzel text-5xl font-bold text-[#c9a84c] mt-4 mb-2 tracking-[0.2em] uppercase">Mesa de lectura</h1>
+</section>
+<!-- Stats Ledger -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-0 border-y border-[#3a2e0e] mb-12 py-8">
+<div class="flex flex-col items-center border-r border-[#3a2e0e] px-4">
+<span class="font-cinzel text-5xl text-[#c9a84c]">48</span>
+<span class="font-newsreader uppercase text-xs tracking-[0.3em] text-[#5a4a20] mt-4">TOTAL LIBROS</span>
+</div>
+<div class="flex flex-col items-center border-r border-[#3a2e0e] px-4">
+<span class="font-cinzel text-5xl text-[#c9a84c]">12</span>
+<span class="font-newsreader uppercase text-xs tracking-[0.3em] text-[#5a4a20] mt-4">LEÍDOS</span>
+</div>
+<div class="flex flex-col items-center border-r border-[#3a2e0e] px-4">
+<span class="font-cinzel text-5xl text-[#c9a84c]">3</span>
+<span class="font-newsreader uppercase text-xs tracking-[0.3em] text-[#5a4a20] mt-4">LEYENDO</span>
+</div>
+<div class="flex flex-col items-center px-4">
+<span class="font-cinzel text-5xl text-[#c9a84c]">33</span>
+<span class="font-newsreader uppercase text-xs tracking-[0.3em] text-[#5a4a20] mt-4">POR LEER</span>
+</div>
+</div>
+<!-- Headers Shared Context -->
+<div class="grid grid-cols-12 gap-12 border-b border-[#3a2e0e] pb-4 mb-10 items-end">
+  <div class="col-span-12 md:col-span-3">
+    <h3 class="font-cinzel text-[#c9a84c] text-xs tracking-widest uppercase">Colecciones</h3>
+  </div>
+  <div class="col-span-12 md:col-span-9 flex justify-between items-end">
+    <h2 class="font-cinzel text-xl text-[#c9a84c] tracking-[0.1em] uppercase">Leyendo Ahora</h2>
+    <span class="font-newsreader text-xs italic text-[#5a4a20]">3 volúmenes</span>
+  </div>
+</div>
+
+<div class="grid grid-cols-12 gap-12">
+<!-- Sidebar Navigation / Filters -->
+<aside class="col-span-12 md:col-span-3 flex flex-col gap-8">
+<div>
+<ul class="font-newsreader space-y-4 text-sm tracking-wide">
+<li class="text-[#5a4a20] hover:text-[#c9a84c] transition-colors flex items-center gap-3 cursor-pointer"><span class="text-[8px]">◇</span> Todos</li>
+<li class="text-[#5a4a20] hover:text-[#c9a84c] transition-colors flex items-center gap-3 cursor-pointer"><span class="text-[8px]">◇</span> Leídos</li>
+<li class="text-[#c9a84c] flex items-center gap-3 cursor-pointer"><span class="text-[8px]">◆</span> Leyendo</li>
+<li class="text-[#5a4a20] hover:text-[#c9a84c] transition-colors flex items-center gap-3 cursor-pointer"><span class="text-[8px]">◇</span> Por Leer</li>
+</ul>
+</div>
+<div class="noir-card p-6 border-dashed">
+  <h3 class="font-cinzel text-[#c9a84c] text-xs tracking-widest uppercase mb-4">Lectura en Curso</h3>
+  <div class="relative h-1 bg-[#1a1a1a] mb-2">
+    <div class="absolute top-0 left-0 h-full bg-[#c9a84c] w-[10%]"></div>
+  </div>
+  <div class="flex justify-between font-newsreader text-[10px] text-[#5a4a20] uppercase tracking-widest">
+    <span>32 / 320 págs.</span>
+    <span class="text-[#c9a84c]">10%</span>
+  </div>
+</div>
+</aside>
+<!-- Main Library Grid -->
+<section class="col-span-12 md:col-span-9">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+<!-- Book Card 1 -->
+<div class="noir-card group overflow-hidden">
+<div class="aspect-[2/3] relative overflow-hidden">
+<img alt="Libro de prueba" class="w-full h-full object-cover filter grayscale brightness-75 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-700" data-alt="Close-up of a vintage leather-bound book with gold foil lettering resting on a dark velvet surface in cinematic noir lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOmi_6u2BJJWrrY0WyAYaYuDXWlfbzwf43KEYp45x9IU4XbglE5l2t4itT4GZAiVyMXAunRTFrJrhZk1nIedLmZ5j5qQ4p0U8Ty13W6IixXok_BPhjgtOJynzRioJEj96-0H1UMvbuTC7iSfSclC6ZdQTOGXNJVjkhBSJKnUZxCK7XG8-NnjksKxg90qYKLyl6gXI-ZoievToKhV70zSV2ld3cUImaQbjfEsC_TDOYf_F6XRZYziAWgk_VnDoHk9sAFQFPznTkx3SO"/>
+<div class="absolute inset-0 bg-gradient-to-t from-[#0d0d0d] via-transparent to-transparent opacity-60"></div>
+<div class="absolute top-4 right-4 bg-[#0d0d0d]/80 border border-[#c9a84c] px-3 py-1">
+<span class="font-cinzel text-[10px] text-[#c9a84c]">78%</span>
+</div>
+</div>
+<div class="p-6">
+<h4 class="font-cinzel text-sm text-[#c9a84c] tracking-wider uppercase mb-1">EL HALCÓN MALTÉS</h4>
+<p class="font-newsreader italic text-[#5a4a20] text-xs mb-4">Dashiell Hammett</p>
+<button class="w-full py-2 border border-[#5a4a20] hover:border-[#c9a84c] font-cinzel text-[10px] tracking-widest text-[#5a4a20] hover:text-[#c9a84c] transition-all uppercase">Continuar</button>
+</div>
+</div>
+<!-- Book Card 2 -->
+<div class="noir-card group overflow-hidden">
+<div class="aspect-[2/3] relative overflow-hidden">
+<img alt="Libro de prueba" class="w-full h-full object-cover filter grayscale brightness-75 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-700" data-alt="Stack of old books in a dark library with a single ray of light illuminating the dusty covers and textured paper edges" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvlW0_ERq_w6cSf0KnJfnA_whBXYhUZ8CBRol1_NGtXuMcr4wMgTbQbq7JLAAmzOthd4lmXRsPHEoSsuhWgrLwSH5k3NtjoidqMJaSNBK5GcWehFryzETzYHTS3VregTsvIgvbCmQ7UBTxnSvjM1_Nc9K1Wda7AZ10eTlSpDwsS6zv9J8ZQjvhDWiaxl5ZS5STNIR1As1zLM8OGt1j7hHBOV-GzqHvOAlmYdlOBOKokSbmRXr4Qyyqy9-gkhH5p31P2-KdZvGkqyGH"/>
+<div class="absolute inset-0 bg-gradient-to-t from-[#0d0d0d] via-transparent to-transparent opacity-60"></div>
+<div class="absolute top-4 right-4 bg-[#0d0d0d]/80 border border-[#c9a84c] px-3 py-1">
+<span class="font-cinzel text-[10px] text-[#c9a84c]">22%</span>
+</div>
+</div>
+<div class="p-6">
+<h4 class="font-cinzel text-sm text-[#c9a84c] tracking-wider uppercase mb-1">LOS ASESINOS</h4>
+<p class="font-newsreader italic text-[#5a4a20] text-xs mb-4">Ernest Hemingway</p>
+<button class="w-full py-2 border border-[#5a4a20] hover:border-[#c9a84c] font-cinzel text-[10px] tracking-widest text-[#5a4a20] hover:text-[#c9a84c] transition-all uppercase">Continuar</button>
+</div>
+</div>
+<!-- Book Card 3 -->
+<div class="noir-card group overflow-hidden">
+<div class="aspect-[2/3] relative overflow-hidden">
+<img alt="Libro de prueba" class="w-full h-full object-cover filter grayscale brightness-75 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-700" data-alt="An antique typewriter on a wooden desk with a half-written manuscript under a soft desk lamp in a dark room" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUvF4TGlxu4sFjGjAd-GQ2j6Dogn-5dFoC6ckhQPpa6Dp0-bPbmXWLaNR5_hqPjV9mHq2S4TaCGwEbC_x7ckDAnrlfKYKbDJQ55oaC3RsojWWybFG8EJfQLRIn2tJfUgvexYLrM13A9jCQyePJ_JcKwY87CRKtb-dmk22Zmcm1MBlAybjNbQM6126fsJiQy_7zfZur_Biiq6AEUyh1m1It1-XFzXmOqwK0CNsMnobK8qam6nFGEyReX2do0nq81Ugo0EIvZf5Jqx9T"/>
+<div class="absolute inset-0 bg-gradient-to-t from-[#0d0d0d] via-transparent to-transparent opacity-60"></div>
+<div class="absolute top-4 right-4 bg-[#0d0d0d]/80 border border-[#c9a84c] px-3 py-1">
+<span class="font-cinzel text-[10px] text-[#c9a84c]">5%</span>
+</div>
+</div>
+<div class="p-6">
+<h4 class="font-cinzel text-sm text-[#c9a84c] tracking-wider uppercase mb-1">EL LARGO ADIÓS</h4>
+<p class="font-newsreader italic text-[#5a4a20] text-xs mb-4">Raymond Chandler</p>
+<button class="w-full py-2 border border-[#5a4a20] hover:border-[#c9a84c] font-cinzel text-[10px] tracking-widest text-[#5a4a20] hover:text-[#c9a84c] transition-all uppercase">Continuar</button>
+</div>
+</div>
+</div>
+<!-- Recent Activity -->
+<div class="mt-20">
+<h2 class="font-cinzel text-xl text-[#c9a84c] tracking-[0.1em] uppercase mb-8 border-b border-[#3a2e0e] pb-4">Actividad Reciente</h2>
+<div class="space-y-6">
+<div class="flex items-center gap-6 group">
+<span class="font-cinzel text-[#c9a84c] text-lg">01</span>
+<div class="flex-1 flex justify-between items-center border-b border-[#1a1a1a] pb-4 group-hover:border-[#c9a84c] transition-colors">
+<div>
+<h5 class="font-cinzel text-xs text-[#e5e2e1] uppercase tracking-widest">Tomaste Notas: El Sueño Eterno</h5>
+<p class="font-newsreader text-[11px] text-[#5a4a20] uppercase mt-1">HACE 45 MINUTOS</p>
+</div>
+<span class="material-symbols-outlined text-[#5a4a20] text-sm">edit_note</span>
+</div>
+</div>
+<div class="flex items-center gap-6 group">
+<span class="font-cinzel text-[#c9a84c] text-lg">02</span>
+<div class="flex-1 flex justify-between items-center border-b border-[#1a1a1a] pb-4 group-hover:border-[#c9a84c] transition-colors">
+<div>
+<h5 class="font-cinzel text-xs text-[#e5e2e1] uppercase tracking-widest">Sesión Finalizada: 24 Páginas</h5>
+<p class="font-newsreader text-[11px] text-[#5a4a20] uppercase mt-1">AYER, 23:15</p>
+</div>
+<span class="material-symbols-outlined text-[#5a4a20] text-sm">timer</span>
+</div>
+</div>
+<div class="flex items-center gap-6 group">
+<span class="font-cinzel text-[#c9a84c] text-lg">03</span>
+<div class="flex-1 flex justify-between items-center border-b border-[#1a1a1a] pb-4 group-hover:border-[#c9a84c] transition-colors">
+<div>
+<h5 class="font-cinzel text-xs text-[#e5e2e1] uppercase tracking-widest">Libro Registrado: Cosecha Roja</h5>
+<p class="font-newsreader text-[11px] text-[#5a4a20] uppercase mt-1">LUNES, 10:30</p>
+</div>
+<span class="material-symbols-outlined text-[#5a4a20] text-sm">menu_book</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Stat Bar (Integrated into Footer flow) -->
+<section class="w-full bg-[#0a0a0a] border-t border-[#3a2e0e] py-12 px-12">
+<div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+<div class="flex flex-col items-center">
+<span class="font-cinzel text-2xl text-[#c9a84c] tracking-widest">1,248</span>
+<span class="font-newsreader text-[10px] text-[#5a4a20] uppercase tracking-[0.2em] mt-2">PÁGINAS LEÍDAS</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="font-cinzel text-2xl text-[#c9a84c] tracking-widest">156</span>
+<span class="font-newsreader text-[10px] text-[#5a4a20] uppercase tracking-[0.2em] mt-2">HORAS DE LECTURA</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="font-cinzel text-2xl text-[#c9a84c] tracking-widest">9.2</span>
+<span class="font-newsreader text-[10px] text-[#5a4a20] uppercase tracking-[0.2em] mt-2">LIBROS / MES</span>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="bg-[#0d0d0d] dark:bg-[#0d0d0d] flex flex-col items-center gap-4 py-12 w-full border-t border-[#3a2e0e]">
+<div class="flex gap-12 mb-6">
+<a class="font-newsreader text-[10px] font-serif tracking-[0.2em] uppercase text-[#5a4a20] hover:text-[#c9a84c] transition-colors duration-500" href="#">TERMINOS</a>
+<span class="text-[#3a2e0e] text-[10px]">◈</span>
+<a class="font-newsreader text-[10px] font-serif tracking-[0.2em] uppercase text-[#5a4a20] hover:text-[#c9a84c] transition-colors duration-500" href="#">PRIVACIDAD</a>
+<span class="text-[#3a2e0e] text-[10px]">◈</span>
+<a class="font-newsreader text-[10px] font-serif tracking-[0.2em] uppercase text-[#5a4a20] hover:text-[#c9a84c] transition-colors duration-500" href="#">MANUSCRITOS</a>
+</div>
+<div class="text-[#3a2e0e] mb-4 text-xs">◈</div>
+<p class="font-newsreader text-[10px] font-serif tracking-[0.2em] uppercase text-[#5a4a20]">© 1924 THE NOIR ARCHIVE. TODOS LOS DERECHOS RESERVADOS.</p>
+</footer>
+</body></html>

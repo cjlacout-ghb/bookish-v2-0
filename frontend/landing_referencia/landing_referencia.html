@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>BOOKISH — THE ARCHIVE NOIR</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&amp;family=EB+Garamond:ital,wght@0,400;0,600;1,400&amp;family=Newsreader:ital,wght@0,300;0,400;1,300&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#594407",
+                        "on-primary": "#3d2e00",
+                        "on-secondary-container": "#cfb26c",
+                        "on-tertiary": "#3c2f07",
+                        "inverse-primary": "#755b00",
+                        "secondary-container": "#594407",
+                        "primary-fixed": "#ffe08f",
+                        "surface-bright": "#3a3939",
+                        "outline": "#99907e",
+                        "tertiary-fixed": "#f9e0a9",
+                        "surface-variant": "#353534",
+                        "on-secondary-fixed": "#251a00",
+                        "tertiary-fixed-dim": "#dbc48f",
+                        "on-error": "#690005",
+                        "inverse-surface": "#e5e2e1",
+                        "primary-fixed-dim": "#e6c364",
+                        "primary": "#e6c364",
+                        "on-primary-fixed": "#241a00",
+                        "error-container": "#93000a",
+                        "background": "#0d0d0d",
+                        "error": "#ffb4ab",
+                        "on-surface-variant": "#d0c5b2",
+                        "on-primary-fixed-variant": "#584400",
+                        "secondary-fixed": "#ffdf96",
+                        "primary-container": "#c9a84c",
+                        "surface-container-highest": "#353534",
+                        "tertiary": "#dbc48f",
+                        "on-tertiary-container": "#4d3e15",
+                        "on-background": "#e5e2e1",
+                        "on-tertiary-fixed": "#241a00",
+                        "on-secondary": "#3e2e00",
+                        "surface-container-lowest": "#0e0e0e",
+                        "surface-tint": "#e6c364",
+                        "surface-container-high": "#2a2a2a",
+                        "on-surface": "#e5e2e1",
+                        "on-primary-container": "#503d00",
+                        "outline-variant": "#4d4637",
+                        "on-error-container": "#ffdad6",
+                        "surface-container": "#201f1f",
+                        "on-tertiary-fixed-variant": "#55451b",
+                        "secondary": "#e2c37c",
+                        "surface": "#0d0d0d",
+                        "secondary-fixed-dim": "#e2c37c",
+                        "inverse-on-surface": "#313030",
+                        "surface-dim": "#0d0d0d",
+                        "surface-container-low": "#1c1b1b",
+                        "tertiary-container": "#bfa976"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0px",
+                        "lg": "0px",
+                        "xl": "0px",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Cinzel", "serif"],
+                        "body": ["EB Garamond", "serif"],
+                        "label": ["Newsreader", "serif"]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0d0d0d;
+            color: #e5e2e1;
+            font-family: 'EB Garamond', serif;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .aspect-16-9 {
+            aspect-ratio: 16 / 9;
+        }
+
+        .cinzel {
+            font-family: 'Cinzel', serif;
+        }
+
+        .garamond {
+            font-family: 'EB Garamond', serif;
+        }
+
+        .newsreader {
+            font-family: 'Newsreader', serif;
+        }
+
+        .border-whisper {
+            border-color: #4d4637;
+        }
+
+        .gold-glow {
+            text-shadow: 0 0 15px rgba(201, 168, 76, 0.2);
+        }
+    </style>
+</head>
+
+<body class="bg-background selection:bg-primary-container selection:text-on-primary-container">
+    <!-- TopAppBar -->
+    <header
+        class="bg-[#0d0d0d] dark:bg-[#0d0d0d] docked full-width top-0 border-b-[0.5px] border-[#4d4637] flex justify-between items-center w-full px-12 py-6 max-w-[1920px] mx-auto z-50 sticky">
+        <div class="text-xl font-bold tracking-[0.25em] uppercase text-[#c9a84c] cinzel">
+            BOOKISH — THE ARCHIVE NOIR
+        </div>
+        <nav class="hidden md:flex gap-12 items-center">
+            <a class="font-serif tracking-[0.2em] uppercase text-sm text-[#c9a84c] border-b border-[#c9a84c] pb-1 cinzel"
+                href="#">THE ARCHIVE</a>
+            <a class="font-serif tracking-[0.2em] uppercase text-sm text-[#9a8040] hover:text-[#c9a84c] transition-colors cinzel"
+                href="#">FEATURES</a>
+            <a class="font-serif tracking-[0.2em] uppercase text-sm text-[#9a8040] hover:text-[#c9a84c] transition-colors cinzel"
+                href="#">JOIN THE NOIR</a>
+        </nav>
+        <div class="flex items-center gap-6">
+            <span class="material-symbols-outlined text-[#c9a84c] cursor-pointer text-2xl"
+                data-icon="menu_book">menu_book</span>
+        </div>
+    </header>
+    <main class="max-w-[1920px] mx-auto">
+        <!-- Hero Section -->
+        <section
+            class="relative w-full aspect-16-9 flex items-center justify-center overflow-hidden border-b-[0.5px] border-outline-variant">
+            <!-- Background Image with Tonal Mask -->
+            <div class="absolute inset-0 z-0">
+                <img alt="Vintage Art Deco Library" class="w-full h-full object-cover opacity-40 grayscale contrast-125"
+                    data-alt="dramatic interior of a dimly lit art deco library with high shelves of leather-bound books and brass railings under warm lamp light"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_FQA7I3XM1t3j45ujGcmFUxXRsivdQcJ-X5cHQCLnmzCwTu_xWifN-eg3YJf0cKtpth3NQwnVnHwkRwZLmj-46Y-PT7A80LEAbYkugv-Ypv3YZiEeZ6kDS39xP_7dTltWeXbdowTV31p1-lXb57piYH15waw4s9RpeRNOtN-JdaclDnAR7qM9Gm6T-kx7zBNd5Jg8fa0WtQsXTUACKm0r_Hb1rbbTipv2RhJIbpWgMOZ9XBAAodEEkRKDaKTnuamQSlzsLuRA6paC" />
+                <div class="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent"></div>
+                <div class="absolute inset-0 bg-gradient-to-r from-background via-transparent to-background"></div>
+            </div>
+            <!-- Content Container -->
+            <div class="relative z-10 text-center px-6 max-w-5xl">
+                <div class="mb-4 text-[#9a8040] text-sm tracking-[0.4em] uppercase cinzel">ESTABLISHED MCMXXIV</div>
+                <h1
+                    class="text-6xl md:text-8xl lg:text-9xl font-black tracking-[0.15em] text-[#c9a84c] uppercase cinzel leading-none mb-8 gold-glow">
+                    BOOKISH <br />
+                    <span class="text-4xl md:text-6xl lg:text-7xl block mt-4 font-normal tracking-[0.3em]">THE ARCHIVE
+                        NOIR</span>
+                </h1>
+                <div class="w-32 h-[0.5px] bg-[#c9a84c] mx-auto mb-8"></div>
+                <p class="italic text-2xl md:text-3xl text-[#e8d9a0] font-body mb-12 garamond max-w-2xl mx-auto">
+                    "Your reading history, meticulously archived."
+                </p>
+                <div class="flex flex-col md:flex-row justify-center gap-6">
+                    <button
+                        class="px-10 py-4 bg-transparent border border-[#c9a84c] text-[#c9a84c] cinzel uppercase tracking-[0.2em] text-sm hover:bg-[#1a1a1a] transition-all duration-300 active:scale-95">
+                        Mesa de lectura
+                    </button>
+                    <button
+                        class="px-10 py-4 bg-transparent border border-[#5a4a20] text-[#9a8040] cinzel uppercase tracking-[0.2em] text-sm hover:text-[#c9a84c] hover:border-[#9a8040] transition-all duration-300">
+                        The Ledger
+                    </button>
+                </div>
+            </div>
+            <!-- Geometric Ornaments -->
+            <div class="absolute bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-4 text-[#5a4a20]">
+                <span class="text-xs">◆</span>
+                <span class="text-lg">◈</span>
+                <span class="text-xs">◆</span>
+            </div>
+        </section>
+        <!-- Feature Section -->
+        <section class="py-32 px-12 md:px-24 bg-[#0a0a0a]">
+            <div class="max-w-7xl mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-8">
+                    <!-- Feature 1: The Core -->
+                    <div class="flex flex-col items-center text-center group">
+                        <div
+                            class="w-16 h-16 border border-[#5a4a20] flex items-center justify-center mb-8 rotate-45 group-hover:border-[#c9a84c] transition-colors duration-500">
+                            <span class="text-2xl text-[#c9a84c] -rotate-45">◆</span>
+                        </div>
+                        <h3 class="cinzel text-xl tracking-[0.2em] uppercase text-[#c9a84c] mb-6">The Core</h3>
+                        <div class="w-8 h-[0.5px] bg-[#3a2e0e] mb-6"></div>
+                        <p class="garamond text-[#e5e2e1] leading-relaxed text-lg italic">
+                            Track titles, authors, and ratings with architectural precision. Every volume recorded in a
+                            permanent digital reliquary.
+                        </p>
+                    </div>
+                    <!-- Feature 2: Visual Intelligence -->
+                    <div class="flex flex-col items-center text-center group">
+                        <div
+                            class="w-16 h-16 border border-[#5a4a20] flex items-center justify-center mb-8 rotate-45 group-hover:border-[#c9a84c] transition-colors duration-500">
+                            <span class="text-2xl text-[#c9a84c] -rotate-45">◈</span>
+                        </div>
+                        <h3 class="cinzel text-xl tracking-[0.2em] uppercase text-[#c9a84c] mb-6">Visual Intelligence
+                        </h3>
+                        <div class="w-8 h-[0.5px] bg-[#3a2e0e] mb-6"></div>
+                        <p class="garamond text-[#e5e2e1] leading-relaxed text-lg italic">
+                            Deep analytics of your reading habits. Observe the expansion of your intellectual horizons
+                            through geometric data visualization.
+                        </p>
+                    </div>
+                    <!-- Feature 3: The Map of Worlds -->
+                    <div class="flex flex-col items-center text-center group">
+                        <div
+                            class="w-16 h-16 border border-[#5a4a20] flex items-center justify-center mb-8 rotate-45 group-hover:border-[#c9a84c] transition-colors duration-500">
+                            <span class="text-2xl text-[#c9a84c] -rotate-45">◉</span>
+                        </div>
+                        <h3 class="cinzel text-xl tracking-[0.2em] uppercase text-[#c9a84c] mb-6">The Map of Worlds</h3>
+                        <div class="w-8 h-[0.5px] bg-[#3a2e0e] mb-6"></div>
+                        <p class="garamond text-[#e5e2e1] leading-relaxed text-lg italic">
+                            Interactive maps of fictional places. Chart your journey through Middle-earth, Gotham, or
+                            the sprawling Victorian streets of London.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Aesthetic Divider -->
+        <section class="h-64 flex items-center justify-center border-y border-outline-variant bg-[#0d0d0d]">
+            <div class="flex items-center gap-12 text-[#5a4a20]">
+                <div class="hidden md:block w-48 h-[0.5px] bg-[#3a2e0e]"></div>
+                <div class="text-2xl tracking-[0.5em] cinzel opacity-50 uppercase">The Keeper of Echoes</div>
+                <div class="hidden md:block w-48 h-[0.5px] bg-[#3a2e0e]"></div>
+            </div>
+        </section>
+        <!-- Bento Showcase Section -->
+        <section class="py-32 px-12 md:px-24 bg-[#0d0d0d]">
+            <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 grid-rows-2 gap-4 h-auto md:h-[800px]">
+                <div class="md:col-span-2 md:row-span-2 border-[0.5px] border-[#3a2e0e] relative overflow-hidden group">
+                    <img alt="Leatherbound Collection"
+                        class="w-full h-full object-cover grayscale opacity-60 group-hover:scale-105 transition-transform duration-1000"
+                        data-alt="top down view of an antique leather-bound journal and a brass fountain pen on a dark wooden surface with heavy shadows"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuALhHWfZz3G4GtvBLw34WFsNssjY4SO7cY5ms2QdXdkcyY8CnCVsfQLhF_49mNlH4IFDsKsvWoW0RI1Ht9fpukS89TUGscvYYboWqSgHqhiH9XuPdlZYoksa7HbocffrcleYJVh6X3vT_fe5ezL6dBB21V4Rj9wRG539e3FDA_Dm9nnXvJCDkYYtswB5o4pHYxOb0r3jcfeJzi76wYPbnyaKq4cjScMVgeX7ybHcKC0RY7mXm-Kgt-OBRJrS5KBMsvUad3OliFtNl-f" />
+                    <div
+                        class="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] to-transparent p-12 flex flex-col justify-end">
+                        <span class="newsreader italic text-[#c9a84c] mb-2 text-lg">MCMXXIV — MCMXL</span>
+                        <h4 class="cinzel text-3xl uppercase tracking-widest text-[#c9a84c]">The Gilded Age Volumes</h4>
+                        <p class="garamond text-on-surface-variant mt-4 max-w-xs">A digital restoration of the rarest
+                            editions ever cataloged within the Noir Archive.</p>
+                    </div>
+                </div>
+                <div
+                    class="md:col-span-2 md:row-span-1 border-[0.5px] border-[#3a2e0e] bg-[#0a0a0a] p-12 flex flex-col justify-center relative overflow-hidden">
+                    <div class="relative z-10">
+                        <h4 class="cinzel text-2xl uppercase tracking-widest text-[#c9a84c] mb-4">Bibliometric Insights
+                        </h4>
+                        <div class="flex gap-4 items-end h-24 mb-6">
+                            <div class="w-6 bg-[#c9a84c] h-[40%]"></div>
+                            <div class="w-6 bg-[#9a8040] h-[70%]"></div>
+                            <div class="w-6 bg-[#c9a84c] h-[90%]"></div>
+                            <div class="w-6 bg-[#5a4a20] h-[50%]"></div>
+                            <div class="w-6 bg-[#c9a84c] h-[80%]"></div>
+                        </div>
+                        <p class="garamond italic text-[#9a8040]">Your patterns are as unique as the ink upon the page.
+                        </p>
+                    </div>
+                    <div class="absolute right-0 top-0 w-32 h-32 border-l border-b border-[#3a2e0e] opacity-20"></div>
+                </div>
+                <div
+                    class="md:col-span-1 md:row-span-1 border-[0.5px] border-[#3a2e0e] bg-[#0d0d0d] flex items-center justify-center p-8">
+                    <div class="text-center">
+                        <span class="material-symbols-outlined text-4xl text-[#c9a84c] mb-4"
+                            data-icon="auto_stories">auto_stories</span>
+                        <div class="cinzel text-xs tracking-widest text-[#5a4a20] uppercase">Page Count</div>
+                        <div class="cinzel text-3xl text-[#c9a84c] mt-2 tracking-tighter">14,802</div>
+                    </div>
+                </div>
+                <div
+                    class="md:col-span-1 md:row-span-1 border-[0.5px] border-[#3a2e0e] bg-[#0a0a0a] flex items-center justify-center p-8">
+                    <div class="text-center">
+                        <span class="material-symbols-outlined text-4xl text-[#c9a84c] mb-4"
+                            data-icon="explore">explore</span>
+                        <div class="cinzel text-xs tracking-widest text-[#5a4a20] uppercase">Worlds Charted</div>
+                        <div class="cinzel text-3xl text-[#c9a84c] mt-2 tracking-tighter">42</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <!-- Footer -->
+    <footer
+        class="bg-[#0a0a0a] full-width border-t-[0.5px] border-[#3a2e0e] flex flex-col md:flex-row justify-between items-center w-full px-12 py-10 gap-4">
+        <div class="font-serif italic tracking-widest text-xs text-[#5a4a20] newsreader">
+            © MCMXXIV THE NOIR ARCHIVE. ALL RIGHTS RESERVED.
+        </div>
+        <div class="flex gap-8">
+            <a class="font-serif italic tracking-widest text-xs text-[#5a4a20] hover:text-[#9a8040] transition-colors newsreader"
+                href="#">PRIVACY</a>
+            <a class="font-serif italic tracking-widest text-xs text-[#5a4a20] hover:text-[#9a8040] transition-colors newsreader"
+                href="#">TERMS</a>
+            <a class="font-serif italic tracking-widest text-xs text-[#5a4a20] hover:text-[#9a8040] transition-colors newsreader uppercase"
+                href="#">LIBRARIAN'S LEDGER</a>
+        </div>
+        <div class="flex gap-4">
+            <span class="text-[#c9a84c] text-xs">◆</span>
+            <span class="text-[#c9a84c] text-xs">◈</span>
+            <span class="text-[#c9a84c] text-xs">◆</span>
+        </div>
+    </footer>
+</body>
+
+</html>

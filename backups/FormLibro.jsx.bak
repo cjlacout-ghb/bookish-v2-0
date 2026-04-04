@@ -1,0 +1,468 @@
+import { useState, useEffect, useRef } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import Estrellas from '../components/Estrellas.jsx'
+
+const ESTADOS_OPCIONES = [
+  { valor: 'por_leer', etiqueta: 'Por leer' },
+  { valor: 'leyendo',  etiqueta: 'Leyendo' },
+  { valor: 'leido',    etiqueta: 'Leído' },
+]
+
+const FORMATOS_OPCIONES = [
+  { valor: 'analógico', etiqueta: 'Analógico' },
+  { valor: 'digital', etiqueta: 'Digital' },
+]
+
+const CAMPOS_VACIOS = {
+  titulo: '',
+  autor: '',
+  genero: '',
+  paginas: '',
+  editorial: '',
+  anio: '',
+  isbn: '',
+  formato: 'analógico',
+  estado: 'por_leer',
+  calificacion: 0,
+  fecha_inicio: '',
+  fecha_fin: '',
+  etiquetas: '',
+  resena: '',
+}
+
+export default function FormLibro() {
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const esEdicion = Boolean(id)
+
+  const [campos, setCampos] = useState(CAMPOS_VACIOS)
+  const [errores, setErrores] = useState({})
+  const [guardando, setGuardando] = useState(false)
+  const [cargando, setCargando] = useState(esEdicion)
+
+  // Portada
+  const [portadaPreview, setPortadaPreview] = useState(null)
+  const [portadaArchivo, setPortadaArchivo] = useState(null)
+  const [portadaExistente, setPortadaExistente] = useState(null)
+  const inputArchivoRef = useRef(null)
+
+  useEffect(() => {
+    if (esEdicion) cargarLibro()
+  }, [id])
+
+  async function cargarLibro() {
+    setCargando(true)
+    try {
+      const res = await fetch(`/api/libros/${id}`)
+      if (!res.ok) { navigate('/'); return }
+      const data = await res.json()
+      setCampos({
+        titulo:      data.titulo || '',
+        autor:       data.autor || '',
+        genero:      data.genero || '',
+        paginas:     data.paginas || '',
+        editorial:   data.editorial || '',
+        anio:        data.anio || '',
+        isbn:        data.isbn || '',
+        formato:     data.formato || 'analógico',
+        estado:      data.estado || 'por_leer',
+        calificacion: data.calificacion || 0,
+        fecha_inicio: data.fecha_inicio || '',
+        fecha_fin:   data.fecha_fin || '',
+        etiquetas:   data.etiquetas || '',
+        resena:      data.resena || '',
+      })
+      if (data.portada_filename) {
+        setPortadaExistente(data.portada_filename)
+      }
+    } catch {
+      navigate('/')
+    } finally {
+      setCargando(false)
+    }
+  }
+
+  function handleCampo(e) {
+    const { name, value } = e.target
+    setCampos((prev) => ({ ...prev, [name]: value }))
+    if (errores[name]) setErrores((prev) => ({ ...prev, [name]: '' }))
+  }
+
+  function handlePortada(e) {
+    const archivo = e.target.files?.[0]
+    if (!archivo) return
+    setPortadaArchivo(archivo)
+    const reader = new FileReader()
+    reader.onload = (ev) => setPortadaPreview(ev.target.result)
+    reader.readAsDataURL(archivo)
+  }
+
+  function validar() {
+    const nuevosErrores = {}
+    if (!campos.titulo.trim()) nuevosErrores.titulo = 'El título es obligatorio.'
+    if (!campos.autor.trim()) nuevosErrores.autor = 'El autor es obligatorio.'
+    if (campos.paginas && isNaN(parseInt(campos.paginas))) nuevosErrores.paginas = 'Ingresá un número válido.'
+    if (campos.anio && isNaN(parseInt(campos.anio))) nuevosErrores.anio = 'Ingresá un año válido.'
+    if (campos.fecha_inicio && campos.fecha_fin) {
+      if (new Date(campos.fecha_fin) < new Date(campos.fecha_inicio)) {
+        nuevosErrores.fecha_fin = 'F. fin debe ser igual o mayor a F. inicio.'
+      }
+    }
+    setErrores(nuevosErrores)
+    return Object.keys(nuevosErrores).length === 0
+  }
+
+  async function handleGuardar(e) {
+    e.preventDefault()
+    if (!validar()) return
+    setGuardando(true)
+
+    const payload = {
+      titulo:       campos.titulo.trim(),
+      autor:        campos.autor.trim(),
+      genero:       campos.genero.trim() || null,
+      paginas:      campos.paginas ? parseInt(campos.paginas) : null,
+      editorial:    campos.editorial.trim() || null,
+      anio:         campos.anio ? parseInt(campos.anio) : null,
+      isbn:         campos.isbn.trim() || null,
+      formato:      campos.formato,
+      estado:       campos.estado,
+      calificacion: campos.calificacion,
+      fecha_inicio: campos.fecha_inicio || null,
+      fecha_fin:    campos.fecha_fin || null,
+      etiquetas:    campos.etiquetas.trim() || null,
+      resena:       campos.resena.trim() || null,
+    }
+
+    try {
+      let libroGuardado
+      if (esEdicion) {
+        const res = await fetch(`/api/libros/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+        if (!res.ok) throw new Error()
+        libroGuardado = await res.json()
+      } else {
+        const res = await fetch('/api/libros', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+        if (!res.ok) throw new Error()
+        libroGuardado = await res.json()
+      }
+
+      // Subir portada si hay una nueva
+      if (portadaArchivo) {
+        const formData = new FormData()
+        formData.append('archivo', portadaArchivo)
+        await fetch(`/api/libros/${libroGuardado.id}/portada`, {
+          method: 'POST',
+          body: formData,
+        })
+      }
+
+      navigate(esEdicion ? `/libro/${id}` : '/')
+    } catch {
+      setErrores({ _general: 'Ocurrió un error al guardar. Intentá de nuevo.' })
+    } finally {
+      setGuardando(false)
+    }
+  }
+
+  if (cargando) {
+    return (
+      <>
+        <header className="cabecera">
+          <div className="cabecera__interior">
+            <span className="cabecera__titulo" style={{ cursor: 'pointer' }} onClick={() => navigate('/')}>Bookish</span>
+          </div>
+        </header>
+        <main className="pagina"><div className="cargando">◆ Cargando ◆</div></main>
+      </>
+    )
+  }
+
+  return (
+    <>
+      <header className="cabecera">
+        <div className="cabecera__interior">
+          <span className="cabecera__titulo" style={{ cursor: 'pointer' }} onClick={() => navigate('/')}>
+            Bookish
+          </span>
+        </div>
+      </header>
+
+      <main className="pagina">
+        <div className="form-libro animar-entrada">
+
+          {/* Miga de pan */}
+          <nav className="miga" aria-label="Navegación">
+            <span className="miga__enlace" onClick={() => navigate('/')} tabIndex={0}>Biblioteca</span>
+            {esEdicion && (
+              <>
+                <span className="miga__separador">◆</span>
+                <span className="miga__enlace" onClick={() => navigate(`/libro/${id}`)} tabIndex={0}>
+                  {campos.titulo || 'Libro'}
+                </span>
+              </>
+            )}
+            <span className="miga__separador">◆</span>
+            <span className="miga__actual">{esEdicion ? 'Editar' : 'Agregar libro'}</span>
+          </nav>
+
+          <h1 style={{
+            fontFamily: 'var(--fuente-titular)',
+            fontSize: '1rem',
+            letterSpacing: '0.2em',
+            textTransform: 'uppercase',
+            color: 'var(--oro-primario)',
+            marginBottom: 'var(--espacio-lg)',
+          }}>
+            {esEdicion ? '✎ Editar libro' : '◆ Nuevo libro'}
+          </h1>
+
+          {errores._general && (
+            <p style={{ color: 'var(--texto-error)', fontSize: '0.85rem', marginBottom: 'var(--espacio-md)' }}>
+              {errores._general}
+            </p>
+          )}
+
+          <form onSubmit={handleGuardar} noValidate>
+
+            {/* Título + Autor */}
+            <div className="form-libro__fila form-libro__fila--destacada">
+              <div className={`campo${errores.titulo ? ' campo--error' : ''}`}>
+                <label className="campo__etiqueta" htmlFor="f-titulo">Título *</label>
+                <input
+                  id="f-titulo"
+                  name="titulo"
+                  className="campo__entrada"
+                  placeholder="El nombre del libro"
+                  value={campos.titulo}
+                  onChange={handleCampo}
+                  autoFocus={!esEdicion}
+                />
+                {errores.titulo && <span className="campo__mensaje-error">{errores.titulo}</span>}
+              </div>
+
+              <div className={`campo${errores.autor ? ' campo--error' : ''}`}>
+                <label className="campo__etiqueta" htmlFor="f-autor">Autor *</label>
+                <input
+                  id="f-autor"
+                  name="autor"
+                  className="campo__entrada"
+                  placeholder="Nombre del autor"
+                  value={campos.autor}
+                  onChange={handleCampo}
+                />
+                {errores.autor && <span className="campo__mensaje-error">{errores.autor}</span>}
+              </div>
+            </div>
+
+            {/* Género + Páginas + Año */}
+            <div className="form-libro__fila-triple">
+              <div className="campo">
+                <label className="campo__etiqueta" htmlFor="f-genero">Género</label>
+                <input id="f-genero" name="genero" className="campo__entrada" placeholder="Novela, Ensayo..." value={campos.genero} onChange={handleCampo} />
+              </div>
+
+              <div className={`campo${errores.paginas ? ' campo--error' : ''}`}>
+                <label className="campo__etiqueta" htmlFor="f-paginas">Páginas</label>
+                <input id="f-paginas" name="paginas" type="number" min="1" className="campo__entrada" placeholder="320" value={campos.paginas} onChange={handleCampo} />
+                {errores.paginas && <span className="campo__mensaje-error">{errores.paginas}</span>}
+              </div>
+
+              <div className={`campo${errores.anio ? ' campo--error' : ''}`}>
+                <label className="campo__etiqueta" htmlFor="f-anio">Año</label>
+                <input id="f-anio" name="anio" type="number" min="1" max="2099" className="campo__entrada" placeholder="2024" value={campos.anio} onChange={handleCampo} />
+                {errores.anio && <span className="campo__mensaje-error">{errores.anio}</span>}
+              </div>
+            </div>
+
+            {/* Editorial + ISBN + Formato */}
+            <div className="form-libro__fila-triple">
+              <div className="campo">
+                <label className="campo__etiqueta" htmlFor="f-editorial">Editorial</label>
+                <input id="f-editorial" name="editorial" className="campo__entrada" placeholder="Nombre de la editorial" value={campos.editorial} onChange={handleCampo} />
+              </div>
+              <div className="campo">
+                <label className="campo__etiqueta" htmlFor="f-isbn">ISBN</label>
+                <input id="f-isbn" name="isbn" className="campo__entrada" placeholder="978-..." value={campos.isbn} onChange={handleCampo} />
+              </div>
+              <div className="campo">
+                <label className="campo__etiqueta" htmlFor="f-formato">Formato</label>
+                <select
+                  id="f-formato"
+                  name="formato"
+                  className="campo__entrada campo__entrada--select"
+                  value={campos.formato}
+                  onChange={handleCampo}
+                >
+                  {FORMATOS_OPCIONES.map((op) => (
+                    <option key={op.valor} value={op.valor}>{op.etiqueta}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Estado + Calificación */}
+            <div className="form-libro__fila">
+              <div className="campo">
+                <label className="campo__etiqueta" htmlFor="f-estado">Estado</label>
+                <select
+                  id="f-estado"
+                  name="estado"
+                  className="campo__entrada campo__entrada--select"
+                  value={campos.estado}
+                  onChange={handleCampo}
+                >
+                  {ESTADOS_OPCIONES.map((op) => (
+                    <option key={op.valor} value={op.valor}>{op.etiqueta}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="campo">
+                <span className="campo__etiqueta">Calificación</span>
+                <div style={{ paddingTop: '0.6rem' }}>
+                  <Estrellas
+                    valor={campos.calificacion}
+                    onChange={(val) => setCampos((prev) => ({ ...prev, calificacion: val }))}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Fechas */}
+            <div className="form-libro__fila-triple">
+              <div className="campo">
+                <label className="campo__etiqueta" htmlFor="f-fecha-inicio">Fecha inicio</label>
+                <input
+                  id="f-fecha-inicio"
+                  name="fecha_inicio"
+                  type="date"
+                  className="campo__entrada"
+                  value={campos.fecha_inicio}
+                  onChange={handleCampo}
+                />
+              </div>
+
+              <div className={`campo${errores.fecha_fin ? ' campo--error' : ''}`}>
+                <label className="campo__etiqueta" htmlFor="f-fecha-fin">Fecha fin</label>
+                <input
+                  id="f-fecha-fin"
+                  name="fecha_fin"
+                  type="date"
+                  className="campo__entrada"
+                  value={campos.fecha_fin}
+                  onChange={handleCampo}
+                  min={campos.fecha_inicio || undefined}
+                />
+                {errores.fecha_fin && <span className="campo__mensaje-error">{errores.fecha_fin}</span>}
+              </div>
+
+              <div className="campo">
+                <span className="campo__etiqueta" style={{ textAlign: 'right' }}>Días de lectura</span>
+                <div className="campo__valor-calculado" id="dias-lectura-resumen">
+                  {(() => {
+                    if (!campos.fecha_inicio || !campos.fecha_fin) return '0'
+                    const inicio = new Date(campos.fecha_inicio)
+                    const fin = new Date(campos.fecha_fin)
+                    const diff = fin - inicio
+                    const dias = Math.ceil(diff / (1000 * 60 * 60 * 24))
+                    return dias >= 0 ? dias : '0'
+                  })()} <span style={{ fontSize: '0.65rem', color: 'var(--texto-tenue)' }}>DÍAS</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Etiquetas */}
+            <div className="campo form-libro__campo-unico">
+              <label className="campo__etiqueta" htmlFor="f-etiquetas">
+                Etiquetas <span style={{ color: 'var(--texto-tenue)' }}>(separadas por coma)</span>
+              </label>
+              <input
+                id="f-etiquetas"
+                name="etiquetas"
+                className="campo__entrada"
+                placeholder="recomendado por mamá, releer algún día, favorito"
+                value={campos.etiquetas}
+                onChange={handleCampo}
+              />
+            </div>
+
+            {/* Reseña */}
+            <div className="campo form-libro__campo-unico">
+              <label className="campo__etiqueta" htmlFor="f-resena">Reseña personal</label>
+              <textarea
+                id="f-resena"
+                name="resena"
+                className="campo__entrada campo__entrada--textarea"
+                placeholder="Tu opinión sobre el libro..."
+                value={campos.resena}
+                onChange={handleCampo}
+                rows={4}
+              />
+            </div>
+
+            {/* Portada */}
+            <div className="form-libro__carga-portada" style={{ marginBottom: 'var(--espacio-xl)' }}>
+              {/* Preview */}
+              {(portadaPreview || portadaExistente) && (
+                <div className="form-libro__portada-preview">
+                  <img
+                    src={portadaPreview || `/portadas/${portadaExistente}`}
+                    alt="Vista previa de portada"
+                  />
+                </div>
+              )}
+              <div className="campo">
+                <span className="campo__etiqueta">Portada del libro</span>
+                <div style={{ paddingTop: '0.4rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  <input
+                    ref={inputArchivoRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="input-archivo"
+                    id="f-portada"
+                    onChange={handlePortada}
+                  />
+                  <label htmlFor="f-portada" className="btn-archivo">
+                    {portadaPreview || portadaExistente ? '↺ Cambiar imagen' : '↑ Subir portada'}
+                  </label>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--texto-tenue)' }}>
+                    JPG, PNG o WEBP
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Botones */}
+            <div style={{ display: 'flex', gap: 'var(--espacio-sm)', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                className="btn btn-secundario"
+                onClick={() => navigate(esEdicion ? `/libro/${id}` : '/')}
+                id="btn-cancelar-form"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                className="btn btn-primario"
+                disabled={guardando}
+                id="btn-guardar-libro"
+              >
+                {guardando ? 'Guardando...' : esEdicion ? '✎ Actualizar' : '◆ Guardar libro'}
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </main>
+    </>
+  )
+}

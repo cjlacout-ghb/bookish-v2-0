@@ -1,0 +1,83 @@
+const API_URL = '/api';
+
+async function handleResponse(res) {
+  if (!res.ok) {
+    let errorMsg = 'Error en la petición';
+    try {
+      const errData = await res.json();
+      errorMsg = errData.detail || errorMsg;
+    } catch (e) {
+      // Ignorar si no hay JSON
+    }
+    throw new Error(errorMsg);
+  }
+  if (res.status === 204) return null;
+  return res.json();
+}
+
+export const API = {
+  // ── Libros ────────────────────────────────────────────────────────────────
+  getLibros: () => fetch(`${API_URL}/libros`).then(handleResponse),
+  getLibro: (id) => fetch(`${API_URL}/libros/${id}`).then(handleResponse),
+  crearLibro: (data) => fetch(`${API_URL}/libros`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+    headers: { 'Content-Type': 'application/json' }
+  }).then(handleResponse),
+  actualizarLibro: (id, data) => fetch(`${API_URL}/libros/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+    headers: { 'Content-Type': 'application/json' }
+  }).then(handleResponse),
+  eliminarLibro: (id) => fetch(`${API_URL}/libros/${id}`, { method: 'DELETE' }).then(handleResponse),
+  subirPortada: (id, formData) => fetch(`${API_URL}/libros/${id}/portada`, {
+    method: 'POST',
+    body: formData
+  }).then(handleResponse),
+
+  // ── Notas ─────────────────────────────────────────────────────────────────
+  getNotas: (libroId) => fetch(`${API_URL}/libros/${libroId}/notas`).then(handleResponse),
+  crearNota: (libroId, data) => fetch(`${API_URL}/libros/${libroId}/notas`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+    headers: { 'Content-Type': 'application/json' }
+  }).then(handleResponse),
+  eliminarNota: (notaId) => fetch(`${API_URL}/notas/${notaId}`, { method: 'DELETE' }).then(handleResponse),
+
+  // ── Sesiones (legacy) ─────────────────────────────────────────────────────
+  getSesiones: (libroId) => fetch(`${API_URL}/libros/${libroId}/sesiones`).then(handleResponse),
+  guardarSesion: (libroId, data) => fetch(`${API_URL}/libros/${libroId}/sesiones`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+    headers: { 'Content-Type': 'application/json' }
+  }).then(handleResponse),
+
+  // ── Timer control ─────────────────────────────────────────────────────────
+  timerStart:  (libroId) => fetch(`${API_URL}/libros/${libroId}/timer/start`, { method: 'POST' }).then(handleResponse),
+  timerPause:  (libroId) => fetch(`${API_URL}/libros/${libroId}/timer/pause`, { method: 'POST' }).then(handleResponse),
+  timerResume: (libroId) => fetch(`${API_URL}/libros/${libroId}/timer/resume`, { method: 'POST' }).then(handleResponse),
+  timerStop:   (libroId, note) => fetch(`${API_URL}/libros/${libroId}/timer/stop`, {
+    method: 'POST',
+    body: JSON.stringify({ session_note: note || null }),
+    headers: { 'Content-Type': 'application/json' }
+  }).then(handleResponse),
+
+  // ── Active sessions ───────────────────────────────────────────────────────
+  getSesionesActivas: () => fetch(`${API_URL}/sessions/active`).then(handleResponse),
+
+  // ── Session CRUD ──────────────────────────────────────────────────────────
+  editarSesion: (id, data) => fetch(`${API_URL}/sessions/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+    headers: { 'Content-Type': 'application/json' }
+  }).then(handleResponse),
+  eliminarSesion: (id) => fetch(`${API_URL}/sessions/${id}`, { method: 'DELETE' }).then(handleResponse),
+
+  // ── Reports ───────────────────────────────────────────────────────────────
+  getReporteDia:  (date)           => fetch(`${API_URL}/reports/day?date=${date}`).then(handleResponse),
+  getReporteMes:  (year, month)    => fetch(`${API_URL}/reports/month?year=${year}&month=${month}`).then(handleResponse),
+  getReporteAnio: (year)           => fetch(`${API_URL}/reports/year?year=${year}`).then(handleResponse),
+
+  // ── Estadísticas ──────────────────────────────────────────────────────────
+  getEstadisticas: () => fetch(`${API_URL}/estadisticas`).then(handleResponse),
+};
