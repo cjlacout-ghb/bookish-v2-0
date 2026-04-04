@@ -35,7 +35,7 @@ export default function LandingPage() {
             </p>
             <div className="hero-buttons">
               <Link to="/biblioteca" className="btn-landing primary">
-                Mesa de lectura
+                la biblioteca
               </Link>
               <Link to="/agregar" className="btn-landing secondary">
                 Registrar Libro

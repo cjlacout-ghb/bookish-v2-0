@@ -1,6 +1,46 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 import { API } from '../services/api.js'
+
+/**
+ * Parsea una fecha ISO del servidor asegurando que se trate como UTC.
+ */
+function parsearFechaUTC(str) {
+  if (!str) return null
+  // Si no tiene zona horaria (Z o offset), le agregamos Z
+  const s = (/Z|[+-]\d{2}(:?\d{2})?$/.test(str)) ? str : str + 'Z'
+  return new Date(s).getTime()
+}
+
+/**
+ * Formatea una fecha ISO para mostrarla en la hora oficial de Buenos Aires (UTC-3).
+ */
+export function formatearRelojBA(isoString) {
+  if (!isoString) return '—'
+  // Forzamos que se interprete como UTC si no tiene zona
+  const s = (/Z|[+-]\d{2}(:?\d{2})?$/.test(isoString)) ? isoString : isoString + 'Z'
+  const date = new Date(s)
+  return date.toLocaleTimeString('es-AR', {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'America/Argentina/Buenos_Aires',
+    hour12: true
+  }).replace(/\./g, '') // Limpiamos puntos si el navegador los pone (e.g. p. m.)
+}
+
+/**
+ * Obtiene la fecha actual en formato YYYY-MM-DD según la zona horaria de Buenos Aires.
+ */
+export function getHoyBA() {
+  const d = new Date()
+  const formatter = new Intl.DateTimeFormat('en-CA', { // en-CA da YYYY-MM-DD
+    timeZone: 'America/Argentina/Buenos_Aires',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  })
+  return formatter.format(d)
+}
 
 /**
  * Formatea segundos como HH:MM:SS (para el cronómetro en tiempo real)
@@ -27,6 +67,26 @@ export function formatearTiempo(segundos) {
   if (h > 0) return `${h}h ${m}m`
   return `${m}m`
 }
+
+// ── Íconos (Art Déco / Noir) ────────────────────────────────────────────────
+export const IconIniciar = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="square">
+    <path d="M5 3l14 9-14 9V3z" />
+  </svg>
+)
+
+export const IconPausar = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="square">
+    <line x1="10" y1="4" x2="10" y2="20" />
+    <line x1="14" y1="4" x2="14" y2="20" />
+  </svg>
+)
+
+export const IconDetener = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="square">
+    <rect x="4" y="4" width="16" height="16" />
+  </svg>
+)
 
 // ── Estado del timer ──────────────────────────────────────────────────────────
 // idle → running → paused → (stop shows note input) → idle
@@ -55,7 +115,6 @@ export default function Timer({
   const [nota, setNota] = useState('')
   const [guardando, setGuardando] = useState(false)
   const [error, setError] = useState('')
-  const [sesionId, setSesionId] = useState(null)
 
   const intervalRef = useRef(null)
   // Epoch ms when the current running segment started (adjusted for pauses)
@@ -72,22 +131,21 @@ export default function Timer({
   useEffect(() => {
     if (sesionActiva && sesionActiva.is_active) {
       const now = Date.now()
-      const inicio = new Date(sesionActiva.iniciado_en).getTime()
+      const inicio = parsearFechaUTC(sesionActiva.iniciado_en)
       const offset = (sesionActiva.pause_offset_seconds || 0) * 1000
 
       if (sesionActiva.paused_at) {
         // Session is paused — compute elapsed up to pause moment
-        const pausado = new Date(sesionActiva.paused_at).getTime()
+        const pausado = parsearFechaUTC(sesionActiva.paused_at)
         const elapsed = Math.floor((pausado - inicio - offset) / 1000)
         segundosAcumRef.current = Math.max(0, elapsed)
         setSegundosActuales(segundosAcumRef.current)
-        setSesionId(sesionActiva.id)
         setEstado('paused')
       } else {
         // Session is running — compute elapsed so far
         const elapsed = Math.floor((now - inicio - offset) / 1000)
         segundosAcumRef.current = Math.max(0, elapsed)
-        setSesionId(sesionActiva.id)
+        setSegundosActuales(segundosAcumRef.current)
         setEstado('running')
         startInterval()
       }
@@ -129,7 +187,6 @@ export default function Timer({
     setGuardando(true)
     try {
       const sesion = await API.timerStart(libroId)
-      setSesionId(sesion.id)
       segundosAcumRef.current = 0
       setSegundosActuales(0)
       setEstado('running')
@@ -147,8 +204,9 @@ export default function Timer({
     setError('')
     setGuardando(true)
     try {
-      await API.timerPause(libroId)
+      const sesion = await API.timerPause(libroId)
       setEstado('paused')
+      onSesionActiva?.(sesion)
     } catch (e) {
       // Roll back interval
       setError(e.message || 'Error al pausar')
@@ -163,9 +221,10 @@ export default function Timer({
     setError('')
     setGuardando(true)
     try {
-      await API.timerResume(libroId)
+      const sesion = await API.timerResume(libroId)
       setEstado('running')
       startInterval()
+      onSesionActiva?.(sesion)
     } catch (e) {
       setError(e.message || 'Error al reanudar')
     } finally {
@@ -188,7 +247,6 @@ export default function Timer({
       setAcumulado(nuevoAcumulado)
       setSegundosActuales(0)
       segundosAcumRef.current = 0
-      setSesionId(null)
       setNota('')
       setEstado('idle')
       onSesionGuardada?.(nuevoAcumulado)
@@ -207,8 +265,6 @@ export default function Timer({
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────
-  const esCorriendoOPausado = estado === 'running' || estado === 'paused'
-
   return (
     <div className="timer">
       {/* Sesión actual */}
@@ -218,7 +274,9 @@ export default function Timer({
           {formatearCronometro(segundosActuales)}
         </div>
         {estado === 'paused' && (
-          <span className="timer__badge-pausa">⏸ En pausa</span>
+          <span className="timer__badge-pausa">
+            <IconPausar /> En pausa
+          </span>
         )}
       </div>
 
@@ -231,7 +289,7 @@ export default function Timer({
             onClick={iniciar}
             disabled={guardando}
           >
-            {guardando ? '...' : '▶ Iniciar'}
+            {guardando ? '...' : <><IconIniciar /> Iniciar</>}
           </button>
         )}
 
@@ -242,8 +300,9 @@ export default function Timer({
               className="btn btn-secundario"
               onClick={pausar}
               disabled={guardando}
+              style={{ marginRight: 'var(--espacio-sm)' }}
             >
-              {guardando ? '...' : '⏸ Pausar'}
+              {guardando ? '...' : <><IconPausar /> Pausar</>}
             </button>
             <button
               id={`timer-btn-stop-${libroId}`}
@@ -251,7 +310,7 @@ export default function Timer({
               onClick={mostrarFormStop}
               disabled={guardando}
             >
-              ◼ Detener
+              <IconDetener /> Detener
             </button>
           </>
         )}
@@ -263,8 +322,9 @@ export default function Timer({
               className="btn btn-primario"
               onClick={reanudar}
               disabled={guardando}
+              style={{ marginRight: 'var(--espacio-sm)' }}
             >
-              {guardando ? '...' : '▶ Reanudar'}
+              {guardando ? '...' : <><IconIniciar /> Reanudar</>}
             </button>
             <button
               id={`timer-btn-stop-paused-${libroId}`}
@@ -272,7 +332,7 @@ export default function Timer({
               onClick={mostrarFormStop}
               disabled={guardando}
             >
-              ◼ Detener
+              <IconDetener /> Detener
             </button>
           </>
         )}
@@ -293,7 +353,7 @@ export default function Timer({
                 onClick={confirmarStop}
                 disabled={guardando}
               >
-                {guardando ? '...' : '◼ Confirmar'}
+                {guardando ? '...' : <><IconDetener /> Confirmar</>}
               </button>
               <button
                 id={`timer-btn-cancelar-stop-${libroId}`}

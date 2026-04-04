@@ -185,6 +185,11 @@ input, textarea, select {
   white-space: nowrap;
 }
 
+.btn svg {
+  flex-shrink: 0;
+  margin-top: -1px; /* Ajuste óptico */
+}
+
 .btn-sm {
   padding: 0.35rem 0.8rem;
   font-size: 0.8rem;
@@ -1603,9 +1608,16 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 
 .timer__acciones {
   display: flex;
-  flex-direction: column;
-  align-items: center;
   gap: var(--espacio-sm);
+  align-items: center;
+  justify-content: center;
+}
+
+.timer__acciones .btn,
+.timers-card__controles .btn {
+  min-width: 155px;
+  height: 38px;
+  justify-content: center;
 }
 
 .timer__badge-pausa {
@@ -1754,6 +1766,17 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   text-transform: uppercase;
   color: var(--oro-silenciado);
   margin-bottom: var(--espacio-sm);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  display: block;
+  width: 100%;
+  transition: color var(--transicion);
+}
+
+.timers-vacio__texto:hover {
+  color: var(--oro-primario);
 }
 
 .timers-vacio__hint {

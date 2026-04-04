@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from '../components/Header.jsx'
-import { formatearCronometro, formatearTiempo } from '../components/Timer.jsx'
+import { formatearCronometro, formatearTiempo, formatearRelojBA, getHoyBA, IconIniciar, IconPausar, IconDetener } from '../components/Timer.jsx'
 import { API } from '../services/api.js'
 
 /* ── Live counter for a single active session card ──────────────────────── */
@@ -10,12 +10,18 @@ function ContadorVivo({ sesion }) {
   const intervalRef = useRef(null)
 
   useEffect(() => {
+    function parsear(str) {
+      if (!str) return null
+      const s = (/Z|[+-]\d{2}(:?\d{2})?$/.test(str)) ? str : str + 'Z'
+      return new Date(s).getTime()
+    }
+
     function calcular() {
       const now = Date.now()
-      const inicio = new Date(sesion.iniciado_en).getTime()
+      const inicio = parsear(sesion.iniciado_en)
       const offset = (sesion.pause_offset_seconds || 0) * 1000
       if (sesion.paused_at) {
-        const pausado = new Date(sesion.paused_at).getTime()
+        const pausado = parsear(sesion.paused_at)
         setSecs(Math.max(0, Math.floor((pausado - inicio - offset) / 1000)))
       } else {
         setSecs(Math.max(0, Math.floor((now - inicio - offset) / 1000)))
@@ -131,7 +137,7 @@ export default function Timers() {
   async function cargarDatos() {
     setCargando(true)
     try {
-      const today = new Date().toISOString().slice(0, 10)
+      const today = getHoyBA()
       const [dataActivas, dataHoy] = await Promise.all([
         API.getSesionesActivas(),
         API.getReporteDia(today),
@@ -189,7 +195,6 @@ export default function Timers() {
           {/* ── Leyendo ahora ──────────────────────────────────────────── */}
           <section className="seccion-bloque">
             <h2 className="seccion-titulo">◷ Leyendo ahora</h2>
-
             {cargando ? (
               <div className="cargando">◆ Cargando ◆</div>
             ) : activas.length === 0 ? (
@@ -197,8 +202,12 @@ export default function Timers() {
                 <div className="timers-vacio__ornamento">
                   <span>◇</span><span className="timers-vacio__grande">◆</span><span>◇</span>
                 </div>
-                <p className="timers-vacio__texto">Ningún libro abierto</p>
-                <p className="timers-vacio__hint">Inicia un cronómetro desde el detalle de cualquier libro en lectura.</p>
+                <button 
+                  className="timers-vacio__texto" 
+                  onClick={() => navigate('/biblioteca')}
+                >
+                  Ningún libro abierto en este momento
+                </button>
               </div>
             ) : (
               <div className="timers-cards">
@@ -225,7 +234,7 @@ export default function Timers() {
                       <p className="timers-card__autor">{sesion.libro?.autor || ''}</p>
                       <ContadorVivo sesion={sesion} />
                       {sesion.paused_at && (
-                        <span className="timers-card__badge-pausa">⏸ En pausa</span>
+                        <span className="timers-card__badge-pausa"><IconPausar /> En pausa</span>
                       )}
                     </div>
 
@@ -236,21 +245,21 @@ export default function Timers() {
                           className="btn btn-sm btn-primario"
                           onClick={() => accionTimer(sesion.libro_id, 'resume')}
                         >
-                          ▶ Reanudar
+                          <IconIniciar /> Reanudar
                         </button>
                       ) : (
                         <button
                           className="btn btn-sm btn-secundario"
                           onClick={() => accionTimer(sesion.libro_id, 'pause')}
                         >
-                          ⏸ Pausar
+                          <IconPausar /> Pausar
                         </button>
                       )}
                       <button
                         className="btn btn-sm btn-peligro"
                         onClick={() => accionTimer(sesion.libro_id, 'stop')}
                       >
-                        ◼ Detener
+                        <IconDetener /> Detener
                       </button>
                     </div>
                   </div>
@@ -278,12 +287,8 @@ export default function Timers() {
             ) : (
               <div className="timers-hoy__lista">
                 {sesionesHoyCompletadas.map(sesion => {
-                  const inicio = sesion.iniciado_en
-                    ? new Date(sesion.iniciado_en).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
-                    : '—'
-                  const fin = sesion.finalizado_en
-                    ? new Date(sesion.finalizado_en).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
-                    : '—'
+                  const inicio = formatearRelojBA(sesion.iniciado_en)
+                  const fin = formatearRelojBA(sesion.finalizado_en)
                   return (
                     <div key={sesion.id} className="timers-hoy__fila">
                       <div className="timers-hoy__libro">

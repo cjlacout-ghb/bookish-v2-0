@@ -26,9 +26,12 @@ function Header() {
         >
           REGISTRAR LIBRO
         </Link>
-        <a href="/#caracteristicas" className="nav-link">
-          LAS INSTALACIONES
-        </a>
+        <Link 
+          to="/timers" 
+          className={`nav-link ${location.pathname === '/timers' ? 'active' : ''}`}
+        >
+          SESIONES
+        </Link>
         <a href="/#unete" className="nav-link">
           ÚNETE AL ARCHIVO
         </a>

@@ -5,6 +5,7 @@ import { es } from 'date-fns/locale/es'
 import "react-datepicker/dist/react-datepicker.css"
 import Estrellas from '../components/Estrellas.jsx'
 import Header from '../components/Header.jsx'
+import { getHoyBA } from '../components/Timer.jsx'
 import { API } from '../services/api.js'
 
 registerLocale('es', es)
@@ -374,8 +375,8 @@ export default function FormLibro() {
                   {(() => {
                     if (!campos.fecha_inicio) return '0'
                     const inicio = new Date(campos.fecha_inicio + 'T12:00:00')
-                    const hoy = new Date()
-                    hoy.setHours(12, 0, 0, 0)
+                    const hoyBA = getHoyBA()
+                    const hoy = new Date(hoyBA + 'T12:00:00')
                     const diff = hoy - inicio
                     const dias = Math.ceil(diff / (1000 * 60 * 60 * 24))
                     return dias >= 0 ? dias : '0'

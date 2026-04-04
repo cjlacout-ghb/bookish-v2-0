@@ -1,20 +1,21 @@
 import { useState, useEffect } from 'react'
 import Header from '../components/Header.jsx'
-import { formatearTiempo } from '../components/Timer.jsx'
+import { formatearTiempo, formatearRelojBA, getHoyBA } from '../components/Timer.jsx'
 import { API } from '../services/api.js'
 
 /* ── Helpers ─────────────────────────────────────────────────────────────── */
 function hoy() {
-  return new Date().toISOString().slice(0, 10)
+  return getHoyBA()
 }
 
 function mesActual() {
-  const d = new Date()
-  return { year: d.getFullYear(), month: d.getMonth() + 1 }
+  const dStr = getHoyBA() // YYYY-MM-DD
+  const parts = dStr.split('-')
+  return { year: parseInt(parts[0]), month: parseInt(parts[1]) }
 }
 
 function anioActual() {
-  return new Date().getFullYear()
+  return parseInt(getHoyBA().split('-')[0])
 }
 
 function barWidth(val, max) {
@@ -113,12 +114,8 @@ function TabDia() {
           <div className="reporte-sesiones">
             <h3 className="seccion-titulo" style={{ fontSize: '0.7rem' }}>Sesiones del día</h3>
             {sesiones.map(s => {
-              const inicio = s.iniciado_en
-                ? new Date(s.iniciado_en).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
-                : '—'
-              const fin = s.finalizado_en
-                ? new Date(s.finalizado_en).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
-                : '—'
+              const inicio = formatearRelojBA(s.iniciado_en)
+              const fin = formatearRelojBA(s.finalizado_en)
               return (
                 <div key={s.id} className="reporte-sesion-fila">
                   <div className="reporte-sesion-info">

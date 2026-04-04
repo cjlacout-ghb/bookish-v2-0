@@ -6,8 +6,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, timezone
 import calendar
+from zoneinfo import ZoneInfo
+
+TZ_BA = ZoneInfo("America/Argentina/Buenos_Aires")
 
 from database import get_db
 from models import Libro, SesionLectura
@@ -46,6 +49,15 @@ def _active_session(libro_id: int, db: Session) -> Optional[SesionLectura]:
         SesionLectura.is_active == True,
     ).first()
 
+
+def _diff_seg(dt1: datetime, dt2: datetime) -> int:
+    """Calcula dt1 - dt2 en segundos, normalizando tzinfo."""
+    if not dt1 or not dt2:
+        return 0
+    d1 = dt1.replace(tzinfo=None) if dt1.tzinfo else dt1
+    d2 = dt2.replace(tzinfo=None) if dt2.tzinfo else dt2
+    return int((d1 - d2).total_seconds())
+
 # ── Legacy: list / create sessions (Stage 1 compat) ──────────────────────────
 
 @router.get("/libros/{libro_id}/sesiones", response_model=List[SesionOut])
@@ -74,7 +86,7 @@ def timer_start(libro_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Ya existe una sesión activa para este libro")
     sesion = SesionLectura(
         libro_id=libro_id,
-        iniciado_en=datetime.utcnow(),
+        iniciado_en=datetime.now(timezone.utc).replace(tzinfo=None),
         is_active=True,
         pause_offset_seconds=0,
     )
@@ -92,7 +104,7 @@ def timer_pause(libro_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="No hay sesión activa para este libro")
     if sesion.paused_at:
         raise HTTPException(status_code=400, detail="La sesión ya está pausada")
-    sesion.paused_at = datetime.utcnow()
+    sesion.paused_at = datetime.now(timezone.utc).replace(tzinfo=None)
     db.commit()
     db.refresh(sesion)
     return sesion
@@ -107,7 +119,9 @@ def timer_resume(libro_id: int, db: Session = Depends(get_db)):
     if not sesion.paused_at:
         raise HTTPException(status_code=400, detail="La sesión no está pausada")
     # Accumulate the pause time
-    paused_duration = int((datetime.utcnow() - sesion.paused_at).total_seconds())
+    # Use naive UTC for compatibility with SQLite naive datetimes
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    paused_duration = _diff_seg(now, sesion.paused_at)
     sesion.pause_offset_seconds = (sesion.pause_offset_seconds or 0) + paused_duration
     sesion.paused_at = None
     db.commit()
@@ -122,15 +136,15 @@ def timer_stop(libro_id: int, body: StopTimerBody = StopTimerBody(), db: Session
     if not sesion:
         raise HTTPException(status_code=404, detail="No hay sesión activa para este libro")
 
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
 
     # If still paused, add remaining pause to offset before stopping
     if sesion.paused_at:
-        paused_duration = int((now - sesion.paused_at).total_seconds())
+        paused_duration = _diff_seg(now, sesion.paused_at)
         sesion.pause_offset_seconds = (sesion.pause_offset_seconds or 0) + paused_duration
         sesion.paused_at = None
 
-    total_elapsed = int((now - sesion.iniciado_en).total_seconds())
+    total_elapsed = _diff_seg(now, sesion.iniciado_en)
     net_seconds = max(0, total_elapsed - (sesion.pause_offset_seconds or 0))
 
     sesion.finalizado_en = now
@@ -164,7 +178,10 @@ def editar_sesion(sesion_id: int, datos: SesionUpdate, db: Session = Depends(get
         sesion.session_note = datos.session_note
     # Recompute duration if both timestamps present
     if sesion.finalizado_en and sesion.iniciado_en:
-        computed = int((sesion.finalizado_en - sesion.iniciado_en).total_seconds())
+        # Avoid naive/aware mix if one comes from API and other from DB
+        fin = sesion.finalizado_en.replace(tzinfo=None) if sesion.finalizado_en.tzinfo else sesion.finalizado_en
+        ini = sesion.iniciado_en.replace(tzinfo=None) if sesion.iniciado_en.tzinfo else sesion.iniciado_en
+        computed = int((fin - ini).total_seconds())
         sesion.duracion_segundos = max(0, computed - (sesion.pause_offset_seconds or 0))
     elif datos.duracion_segundos is not None:
         sesion.duracion_segundos = datos.duracion_segundos
@@ -202,17 +219,22 @@ def reporte_dia(date_str: str = Query(None, alias="date"), db: Session = Depends
         except ValueError:
             raise HTTPException(status_code=400, detail="Formato de fecha inválido. Use YYYY-MM-DD")
     else:
-        target = date.today()
+        target = datetime.now(TZ_BA).date()
 
-    day_start = datetime(target.year, target.month, target.day, 0, 0, 0)
-    day_end = datetime(target.year, target.month, target.day, 23, 59, 59)
+    # Define boundaries in Buenos Aires time
+    day_start_ba = datetime(target.year, target.month, target.day, 0, 0, 0, tzinfo=TZ_BA)
+    day_end_ba = datetime(target.year, target.month, target.day, 23, 59, 59, tzinfo=TZ_BA)
+
+    # Convert mapping to UTC naive for DB querying
+    day_start_utc = day_start_ba.astimezone(timezone.utc).replace(tzinfo=None)
+    day_end_utc = day_end_ba.astimezone(timezone.utc).replace(tzinfo=None)
 
     sesiones = (
         db.query(SesionLectura)
         .filter(
             SesionLectura.is_active == False,
-            SesionLectura.iniciado_en >= day_start,
-            SesionLectura.iniciado_en <= day_end,
+            SesionLectura.iniciado_en >= day_start_utc,
+            SesionLectura.iniciado_en <= day_end_utc,
         )
         .order_by(SesionLectura.iniciado_en)
         .all()
@@ -239,15 +261,21 @@ def reporte_mes(
         raise HTTPException(status_code=400, detail="Mes inválido")
 
     _, days_in_month = calendar.monthrange(year, month)
-    month_start = datetime(year, month, 1)
-    month_end = datetime(year, month, days_in_month, 23, 59, 59)
+    
+    # Month boundaries in BA time
+    month_start_ba = datetime(year, month, 1, 0, 0, 0, tzinfo=TZ_BA)
+    month_end_ba = datetime(year, month, days_in_month, 23, 59, 59, tzinfo=TZ_BA)
+
+    # Convert to UTC naive
+    month_start_utc = month_start_ba.astimezone(timezone.utc).replace(tzinfo=None)
+    month_end_utc = month_end_ba.astimezone(timezone.utc).replace(tzinfo=None)
 
     sesiones = (
         db.query(SesionLectura)
         .filter(
             SesionLectura.is_active == False,
-            SesionLectura.iniciado_en >= month_start,
-            SesionLectura.iniciado_en <= month_end,
+            SesionLectura.iniciado_en >= month_start_utc,
+            SesionLectura.iniciado_en <= month_end_utc,
         )
         .all()
     )
@@ -282,15 +310,20 @@ def reporte_mes(
 
 @router.get("/reports/year", response_model=ReporteAnio)
 def reporte_anio(year: int = Query(...), db: Session = Depends(get_db)):
-    year_start = datetime(year, 1, 1)
-    year_end = datetime(year, 12, 31, 23, 59, 59)
+    # Year boundaries in BA time
+    year_start_ba = datetime(year, 1, 1, 0, 0, 0, tzinfo=TZ_BA)
+    year_end_ba = datetime(year, 12, 31, 23, 59, 59, tzinfo=TZ_BA)
+
+    # Convert to UTC naive
+    year_start_utc = year_start_ba.astimezone(timezone.utc).replace(tzinfo=None)
+    year_end_utc = year_end_ba.astimezone(timezone.utc).replace(tzinfo=None)
 
     sesiones = (
         db.query(SesionLectura)
         .filter(
             SesionLectura.is_active == False,
-            SesionLectura.iniciado_en >= year_start,
-            SesionLectura.iniciado_en <= year_end,
+            SesionLectura.iniciado_en >= year_start_utc,
+            SesionLectura.iniciado_en <= year_end_utc,
         )
         .all()
     )

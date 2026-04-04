@@ -65,7 +65,7 @@ export default function Biblioteca() {
         ) : (
           <>
             <section className="bib-header">
-              <h1 className="bib-header__title">Mesa de lectura</h1>
+              <h1 className="bib-header__title">La Biblioteca</h1>
             </section>
 
             {stats && (
