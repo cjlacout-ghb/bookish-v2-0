@@ -64,9 +64,6 @@ export default function Biblioteca() {
           <div className="cargando">◆ Cargando el archivo ◆</div>
         ) : (
           <>
-            <section className="bib-header">
-              <h1 className="bib-header__title">La Biblioteca</h1>
-            </section>
 
             {stats && (
               <div className="bib-stats-ledger">
