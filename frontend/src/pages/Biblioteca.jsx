@@ -118,10 +118,10 @@ export default function Biblioteca() {
                 </div>
 
                 <div className="bib-sidebar-block">
-                  <p className="bib-sidebar-seccion">Sesiones</p>
+                  <p className="bib-sidebar-seccion"></p>
                   <ul className="bib-sidebar-list">
-                    <li className="bib-sidebar-item" onClick={() => navigate('/timers')}>
-                      <span>◇</span> Timers
+                    <li className="bib-sidebar-item" onClick={() => navigate('/sesiones')}>
+                      <span>◇</span> Sesiones
                     </li>
                     <li className="bib-sidebar-item" onClick={() => navigate('/reportes')}>
                       <span>◇</span> Reportes

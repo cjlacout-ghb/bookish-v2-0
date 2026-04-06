@@ -446,6 +446,35 @@ input, textarea, select {
   border-radius: var(--borde-radio);
 }
 
+.badge-estado-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='6' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23c9a84c' stroke-width='2' fill='none' stroke-linecap='square'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  padding-right: 1.5rem;
+  cursor: pointer;
+  border: 1px solid var(--oro-oscuro);
+  background-color: var(--sup-alta);
+  color: var(--oro-primario);
+  transition: all var(--transicion);
+  width: auto;
+  display: inline-block;
+}
+
+.badge-estado-select:hover {
+  border-color: var(--oro-silenciado);
+  background-color: var(--sup-max);
+}
+
+.badge-estado-select option {
+  background-color: var(--sup-max);
+  color: var(--texto-primario);
+  font-family: var(--fuente-cuerpo);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
 .badge-estado--leyendo {
   color: var(--oro-primario);
   border: 0.5px solid var(--oro-primario);
@@ -2130,7 +2159,10 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   font-size: 1.5rem;
   color: var(--oro-primario);
   letter-spacing: 0.05em;
-  line-height: 1;
+  line-height: 1.1;
+  height: 1.8rem; /* Altura fija para servir de base común */
+  display: flex;
+  align-items: flex-end;
 }
 
 .reporte-stat__val--sm {

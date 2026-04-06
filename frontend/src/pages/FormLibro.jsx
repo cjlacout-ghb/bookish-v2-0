@@ -216,8 +216,10 @@ export default function FormLibro() {
 
       <main className="pagina">
         <div className="form-libro animar-entrada">
-
-
+          <div className="timers-page__header" style={{ marginBottom: 'calc(-1 * var(--espacio-xl) - 0.5rem)' }}>
+            <h1 className="timers-page__titulo">{esEdicion ? 'Editar libro' : 'Agregar a la biblioteca'}</h1>
+            {esEdicion && <p className="timers-page__subtitulo">Actualizar registro</p>}
+          </div>
           {errores._general && (
             <div className="mensaje-error-general">
               {errores._general}

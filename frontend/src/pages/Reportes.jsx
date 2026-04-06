@@ -101,7 +101,7 @@ function TabDia() {
               <span className="reporte-stat__val">{formatearTiempo(totalSecs)}</span>
               <span className="reporte-stat__label">Total del día</span>
             </div>
-            <div className="reporte-stat">
+            <div className="reporte-stat reporte-stat--destacado">
               <span className="reporte-stat__val">{data.libros_count}</span>
               <span className="reporte-stat__label">Libros leídos</span>
             </div>
@@ -223,7 +223,7 @@ function TabMes() {
             </div>
             {data?.libro_mas_leido && (
               <div className="reporte-stat reporte-stat--destacado">
-                <span className="reporte-stat__val reporte-stat__val--sm">{data.libro_mas_leido}</span>
+                <span className="reporte-stat__val">{data.libro_mas_leido}</span>
                 <span className="reporte-stat__label">Más leído</span>
               </div>
             )}
@@ -307,7 +307,7 @@ function TabAnio() {
             </div>
             {data?.libro_mas_leido && (
               <div className="reporte-stat reporte-stat--destacado">
-                <span className="reporte-stat__val reporte-stat__val--sm">{data.libro_mas_leido}</span>
+                <span className="reporte-stat__val">{data.libro_mas_leido}</span>
                 <span className="reporte-stat__label">Más leído</span>
               </div>
             )}

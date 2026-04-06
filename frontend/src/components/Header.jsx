@@ -24,13 +24,19 @@ function Header() {
           to="/agregar" 
           className={`nav-link ${location.pathname === '/agregar' ? 'active' : ''}`}
         >
-          REGISTRAR LIBRO
+          AGREGAR LIBRO
         </Link>
         <Link 
-          to="/timers" 
-          className={`nav-link ${location.pathname === '/timers' ? 'active' : ''}`}
+          to="/sesiones" 
+          className={`nav-link ${location.pathname === '/sesiones' ? 'active' : ''}`}
         >
           SESIONES
+        </Link>
+        <Link 
+          to="/reportes" 
+          className={`nav-link ${location.pathname === '/reportes' ? 'active' : ''}`}
+        >
+          REPORTES
         </Link>
 
       </nav>

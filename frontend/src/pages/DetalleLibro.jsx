@@ -7,11 +7,11 @@ import TagModal from '../components/TagModal.jsx'
 import Header from '../components/Header.jsx'
 import { API } from '../services/api.js'
 
-const ESTADOS_ETIQUETA = {
-  leyendo:  'Leyendo',
-  leido:    'Leído',
-  por_leer: 'Por leer',
-}
+const ESTADOS_OPCIONES = [
+  { valor: 'por_leer', etiqueta: 'Por leer' },
+  { valor: 'leyendo',  etiqueta: 'Leyendo' },
+  { valor: 'leido',    etiqueta: 'Leído' },
+]
 
 export default function DetalleLibro() {
   const { id } = useParams()
@@ -87,6 +87,19 @@ export default function DetalleLibro() {
     setTotalSegundos(nuevoTotal)
   }
 
+  async function handleCambioEstado(nuevoEstado) {
+    if (nuevoEstado === libro.estado) return
+    
+    try {
+      // Actualizamos solo el estado
+      const data = await API.actualizarLibro(id, { ...libro, estado: nuevoEstado })
+      setLibro(data)
+    } catch (err) {
+      console.error('Error al actualizar estado:', err)
+      // Opcional: mostrar mensaje de error al usuario
+    }
+  }
+
   if (cargando) {
     return (
       <>
@@ -133,9 +146,18 @@ export default function DetalleLibro() {
 
             {/* Información */}
             <div className="detalle-libro__meta">
-              <span className={`badge-estado badge-estado--${libro.estado}`}>
-                {ESTADOS_ETIQUETA[libro.estado] || libro.estado}
-              </span>
+              <select 
+                className={`badge-estado badge-estado-select badge-estado--${libro.estado}`}
+                value={libro.estado}
+                onChange={(e) => handleCambioEstado(e.target.value)}
+                title="Cambiar estado del libro"
+              >
+                {ESTADOS_OPCIONES.map((op) => (
+                  <option key={op.valor} value={op.valor}>
+                    {op.etiqueta.toUpperCase()}
+                  </option>
+                ))}
+              </select>
 
               <h1 className="detalle-libro__titulo">{libro.titulo}</h1>
               <p className="detalle-libro__autor">{libro.autor}</p>

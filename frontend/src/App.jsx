@@ -17,7 +17,7 @@ export default function App() {
         <Route path="/libro/:id"          element={<DetalleLibro />} />
         <Route path="/agregar"            element={<FormLibro />} />
         <Route path="/libro/:id/editar"   element={<FormLibro />} />
-        <Route path="/timers"             element={<Timers />} />
+        <Route path="/sesiones"           element={<Timers />} />
         <Route path="/reportes"           element={<Reportes />} />
       </Routes>
     </BrowserRouter>
