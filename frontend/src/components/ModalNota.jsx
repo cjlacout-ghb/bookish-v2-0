@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import PropTypes from 'prop-types'
 import { API } from '../services/api.js'
 /**
@@ -8,7 +8,7 @@ import { API } from '../services/api.js'
  *   onCerrar  — callback para cerrar el modal
  *   onGuardada — callback(nota) tras guardar exitosamente
  */
-export default function ModalNota({ libroId, onCerrar, onGuardada }) {
+function ModalNota({ libroId, onCerrar, onGuardada }) {
   const [contenido, setContenido] = useState('')
   const [numeroPagina, setNumeroPagina] = useState('')
   const [esCita, setEsCita] = useState(false)
@@ -132,3 +132,5 @@ ModalNota.propTypes = {
   onCerrar: PropTypes.func.isRequired,
   onGuardada: PropTypes.func,
 }
+
+export default memo(ModalNota)

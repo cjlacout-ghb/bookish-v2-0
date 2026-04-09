@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, memo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import PropTypes from 'prop-types'
 import Estrellas from '../components/Estrellas.jsx'
 import Timer from '../components/Timer.jsx'
 import ModalNota from '../components/ModalNota.jsx'
@@ -69,13 +70,6 @@ export default function DetalleLibro() {
     try {
       await API.eliminarNota(notaId)
       setNotas((prev) => prev.filter((n) => n.id !== notaId))
-    } catch {}
-  }
-
-  async function eliminarLibro() {
-    try {
-      await API.eliminarLibro(id)
-      navigate('/biblioteca')
     } catch {}
   }
 
@@ -316,7 +310,7 @@ export default function DetalleLibro() {
                       Citas textuales
                     </p>
                     {citas.map((nota) => (
-                      <NotaItem key={nota.id} nota={nota} onEliminar={eliminarNota} />
+                      <MemoizedNotaItem key={nota.id} nota={nota} onEliminar={eliminarNota} />
                     ))}
                     {notasSolas.length > 0 && (
                       <div className="ornamento-divisor">◇</div>
@@ -326,7 +320,7 @@ export default function DetalleLibro() {
 
                 {/* Notas */}
                 {notasSolas.map((nota) => (
-                  <NotaItem key={nota.id} nota={nota} onEliminar={eliminarNota} />
+                  <MemoizedNotaItem key={nota.id} nota={nota} onEliminar={eliminarNota} />
                 ))}
               </>
             )}
@@ -398,3 +392,15 @@ function NotaItem({ nota, onEliminar }) {
     </div>
   )
 }
+
+NotaItem.propTypes = {
+  nota: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    es_cita: PropTypes.bool,
+    contenido: PropTypes.string,
+    numero_pagina: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+  }).isRequired,
+  onEliminar: PropTypes.func.isRequired
+}
+
+const MemoizedNotaItem = memo(NotaItem);

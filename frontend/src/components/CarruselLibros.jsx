@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
+import PropTypes from 'prop-types';
 import TarjetaLibro from './TarjetaLibro.jsx';
 
-export default function CarruselLibros({ libros }) {
+function CarruselLibros({ libros }) {
   const [index, setIndex] = useState(0);
   const cardWidth = 240;
   const gap = 32; /* 2rem = 32px */
@@ -47,3 +48,13 @@ export default function CarruselLibros({ libros }) {
     </div>
   );
 }
+
+CarruselLibros.propTypes = {
+  libros: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    })
+  ).isRequired,
+};
+
+export default memo(CarruselLibros);
