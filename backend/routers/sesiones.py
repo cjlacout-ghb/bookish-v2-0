@@ -139,8 +139,9 @@ def timer_stop(
     libro_id: int, 
     session_note: Optional[str] = Form(None),
     captura: Optional[UploadFile] = File(None),
+    pagina_actual: Optional[int] = Form(None),
     db: Session = Depends(get_db)):
-    _get_libro_or_404(libro_id, db)
+    libro = _get_libro_or_404(libro_id, db)
     sesion = _active_session(libro_id, db)
     if not sesion:
         raise HTTPException(status_code=404, detail="No hay sesión activa para este libro")
@@ -161,6 +162,10 @@ def timer_stop(
     sesion.is_active = False
     sesion.session_note = session_note
     
+    # Update book progress if provided
+    if pagina_actual is not None:
+        libro.pagina_actual = pagina_actual
+
     # Save image if provided
     if captura:
         ext = os.path.splitext(captura.filename)[1]

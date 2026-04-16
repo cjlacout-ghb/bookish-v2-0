@@ -57,10 +57,11 @@ export const API = {
   timerStart:  (libroId) => fetch(`${API_URL}/libros/${libroId}/timer/start`, { method: 'POST' }).then(handleResponse),
   timerPause:  (libroId) => fetch(`${API_URL}/libros/${libroId}/timer/pause`, { method: 'POST' }).then(handleResponse),
   timerResume: (libroId) => fetch(`${API_URL}/libros/${libroId}/timer/resume`, { method: 'POST' }).then(handleResponse),
-  timerStop:   (libroId, note, file) => {
+  timerStop:   (libroId, note, file, paginaActual) => {
     const formData = new FormData();
     if (note) formData.append('session_note', note);
     if (file) formData.append('captura', file);
+    if (paginaActual !== undefined && paginaActual !== null) formData.append('pagina_actual', paginaActual);
     
     return fetch(`${API_URL}/libros/${libroId}/timer/stop`, {
       method: 'POST',

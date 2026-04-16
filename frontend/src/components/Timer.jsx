@@ -112,6 +112,7 @@ export default function Timer({
   libroId,
   totalSegundos = 0,
   sesionActiva = null,
+  paginaInicial = 0,
   onSesionGuardada,
   onSesionActiva,
 }) {
@@ -120,6 +121,7 @@ export default function Timer({
   const [segundosActuales, setSegundosActuales] = useState(0)
   const [acumulado, setAcumulado] = useState(totalSegundos)
   const [nota, setNota] = useState('')
+  const [paginaActual, setPaginaActual] = useState(paginaInicial)
   const [capturaFile, setCapturaFile] = useState(null)
   const [guardando, setGuardando] = useState(false)
   const [error, setError] = useState('')
@@ -130,10 +132,14 @@ export default function Timer({
   // Seconds accumulated across all running segments this "session view"
   const segundosAcumRef = useRef(0)
 
-  // Sync acumulado si cambia desde fuera
+  // Sync acumulado y pagina si cambian desde fuera
   useEffect(() => {
     setAcumulado(totalSegundos)
   }, [totalSegundos])
+
+  useEffect(() => {
+    setPaginaActual(paginaInicial)
+  }, [paginaInicial])
 
   // ── Restore active session on mount or when loaded ──────────────────────────
   useEffect(() => {
@@ -244,13 +250,14 @@ export default function Timer({
     setEstado('stopping')
     setNota('')
     setCapturaFile(null)
+    setPaginaActual(paginaInicial)
   }
 
   async function confirmarStop() {
     setError('')
     setGuardando(true)
     try {
-      const sesion = await API.timerStop(libroId, nota.trim() || null, capturaFile)
+      const sesion = await API.timerStop(libroId, nota.trim() || null, capturaFile, paginaActual)
       const nuevoAcumulado = acumulado + (sesion.duracion_segundos || 0)
       setAcumulado(nuevoAcumulado)
       setSegundosActuales(0)
@@ -258,7 +265,7 @@ export default function Timer({
       setNota('')
       setCapturaFile(null)
       setEstado('idle')
-      onSesionGuardada?.(nuevoAcumulado)
+      onSesionGuardada?.(nuevoAcumulado, paginaActual)
       onSesionActiva?.(null)
     } catch (e) {
       setError(e.message || 'Error al detener la sesión')
@@ -342,14 +349,29 @@ export default function Timer({
 
         {estado === 'stopping' && (
           <div className="timer__stop-form" style={{ gridColumn: 'span 2' }}>
-            <textarea
-              className="campo__entrada campo__entrada--textarea"
-              style={{ marginBottom: 'var(--espacio-sm)', fontSize: '0.9rem' }}
-              placeholder="Nota opcional sobre la sesión…"
-              value={nota}
-              onChange={e => setNota(e.target.value)}
-              rows={2}
-            />
+            <div style={{ display: 'flex', gap: 'var(--espacio-sm)', marginBottom: 'var(--espacio-sm)' }}>
+              <div style={{ flex: 1 }}>
+                <textarea
+                  className="campo__entrada campo__entrada--textarea"
+                  style={{ fontSize: '0.9rem', height: '100%', minHeight: '80px' }}
+                  placeholder="Nota opcional sobre la sesión…"
+                  value={nota}
+                  onChange={e => setNota(e.target.value)}
+                  rows={2}
+                />
+              </div>
+              
+              <div style={{ width: '120px' }}>
+                <label className="campo__etiqueta" style={{ fontSize: '0.75rem', marginBottom: '4px', display: 'block' }}>Pág. actual</label>
+                <input
+                  type="number"
+                  className="campo__entrada"
+                  style={{ fontSize: '1rem', textAlign: 'center' }}
+                  value={paginaActual}
+                  onChange={e => setPaginaActual(parseInt(e.target.value) || 0)}
+                />
+              </div>
+            </div>
             
             <div className="campo timer__file-upload" style={{ marginBottom: 'var(--espacio-sm)' }}>
               <label 
@@ -417,6 +439,7 @@ Timer.propTypes = {
   libroId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   totalSegundos: PropTypes.number,
   sesionActiva: PropTypes.object,
+  paginaInicial: PropTypes.number,
   onSesionGuardada: PropTypes.func,
   onSesionActiva: PropTypes.func,
 }

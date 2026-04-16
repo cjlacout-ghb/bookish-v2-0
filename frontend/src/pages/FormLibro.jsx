@@ -280,9 +280,37 @@ export default function FormLibro() {
 
       <main className="pagina">
         <div className="form-libro animar-entrada">
-          <div className="timers-page__header" style={{ marginBottom: 'calc(-1 * var(--espacio-xl) - 0.5rem)' }}>
-            <h1 className="timers-page__titulo">{esEdicion ? 'Editar libro' : 'Agregar a la biblioteca'}</h1>
-            {esEdicion && <p className="timers-page__subtitulo">Actualizar registro</p>}
+          <div className="form-libro__header-sticky">
+            <div className="timers-page__header" style={{ border: 'none', margin: 0, padding: 0 }}>
+              <h1 className="timers-page__titulo">{esEdicion ? 'Editar libro' : 'Agregar a la biblioteca'}</h1>
+              {esEdicion && <p className="timers-page__subtitulo">Actualizar registro</p>}
+            </div>
+
+            <div className="form-libro__header-acciones">
+              {!formHabilitado ? (
+                <button
+                  type="button"
+                  className="btn btn-primario"
+                  onClick={(e) => { 
+                    e.preventDefault(); 
+                    setFormHabilitado(true); 
+                  }}
+                  id="btn-habilitar-edicion-top"
+                >
+                  ✎ Editar
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  form="form-libro-main"
+                  className="btn btn-primario"
+                  disabled={guardando}
+                  id="btn-guardar-libro-top"
+                >
+                  {guardando ? '...' : (esEdicion ? 'Actualizar' : '◆ Guardar')}
+                </button>
+              )}
+            </div>
           </div>
           {errores._general && (
             <div className="mensaje-error-general">
@@ -290,7 +318,7 @@ export default function FormLibro() {
             </div>
           )}
 
-          <form onSubmit={handleGuardar} noValidate>
+          <form id="form-libro-main" onSubmit={handleGuardar} noValidate>
             <fieldset disabled={formHabilitado ? undefined : true} style={{ border: 'none', padding: 0, margin: 0 }}>
 
             {/* Título + Autor */}
@@ -579,29 +607,6 @@ export default function FormLibro() {
               </button>
               
               <div className="form-libro__acciones-derecha">
-                {!formHabilitado ? (
-                  <button
-                    type="button"
-                    className="btn btn-primario"
-                    onClick={(e) => { 
-                      e.preventDefault(); 
-                      setFormHabilitado(true); 
-                    }}
-                    id="btn-habilitar-edicion"
-                  >
-                    ✎ Editar
-                  </button>
-                ) : (
-                  <button
-                    type="submit"
-                    className="btn btn-primario"
-                    disabled={guardando}
-                    id="btn-guardar-libro"
-                  >
-                    {guardando ? 'Guardando...' : esEdicion ? 'Actualizar' : '◆ Guardar libro'}
-                  </button>
-                )}
-
                 {esEdicion && (
                   !confirmEliminar ? (
                     <button

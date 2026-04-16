@@ -90,8 +90,11 @@ export default function DetalleLibro() {
     setNotas((prev) => [nota, ...prev])
   }
 
-  function onSesionGuardada(nuevoTotal) {
+  function onSesionGuardada(nuevoTotal, nuevaPagina) {
     setTotalSegundos(nuevoTotal)
+    if (nuevaPagina !== undefined && nuevaPagina !== null) {
+      setLibro(prev => ({ ...prev, pagina_actual: nuevaPagina }))
+    }
     cargarSesiones()
   }
 
@@ -211,12 +214,12 @@ export default function DetalleLibro() {
                     </span>
                   </div>
                 )}
-                {libro.paginas && (
-                  <div className="atributo">
-                    <span className="atributo__clave">Páginas</span>
-                    <span className="atributo__valor">{libro.paginas}</span>
-                  </div>
-                )}
+                <div className="atributo">
+                  <span className="atributo__clave">Páginas</span>
+                  <span className="atributo__valor">
+                    {libro.pagina_actual || 0} / {libro.paginas || '—'}
+                  </span>
+                </div>
                 {libro.editorial && (
                   <div className="atributo">
                     <span className="atributo__clave">Editorial</span>
@@ -281,6 +284,7 @@ export default function DetalleLibro() {
                 libroId={libro.id}
                 totalSegundos={totalSegundos}
                 sesionActiva={sesionActiva}
+                paginaInicial={libro.pagina_actual || 0}
                 onSesionGuardada={onSesionGuardada}
                 onSesionActiva={setSesionActiva}
               />
