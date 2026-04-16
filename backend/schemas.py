@@ -9,7 +9,7 @@ class LibroCreate(BaseModel):
     paginas: Optional[int] = None
     pagina_actual: Optional[int] = 0
     editorial: Optional[str] = None
-    anio: Optional[int] = None
+    primera_edicion_anio: Optional[int] = None
     isbn: Optional[str] = None
     estado: Optional[str] = "por_leer"
     formato: Optional[str] = "analógico"
@@ -17,9 +17,10 @@ class LibroCreate(BaseModel):
     fecha_inicio: Optional[date] = None
     fecha_fin: Optional[date] = None
     ultima_edicion_anio: Optional[int] = None
-    ultima_edicion_detalle: Optional[str] = None
+    actual_edicion_anio: Optional[int] = None
     etiquetas: Optional[str] = None
     resena: Optional[str] = None
+
 
 class LibroUpdate(BaseModel):
     titulo: Optional[str] = None
@@ -28,7 +29,7 @@ class LibroUpdate(BaseModel):
     paginas: Optional[int] = None
     pagina_actual: Optional[int] = None
     editorial: Optional[str] = None
-    anio: Optional[int] = None
+    primera_edicion_anio: Optional[int] = None
     isbn: Optional[str] = None
     estado: Optional[str] = None
     formato: Optional[str] = None
@@ -36,9 +37,10 @@ class LibroUpdate(BaseModel):
     fecha_inicio: Optional[date] = None
     fecha_fin: Optional[date] = None
     ultima_edicion_anio: Optional[int] = None
-    ultima_edicion_detalle: Optional[str] = None
+    actual_edicion_anio: Optional[int] = None
     etiquetas: Optional[str] = None
     resena: Optional[str] = None
+
 
 class LibroOut(BaseModel):
     id: int
@@ -48,7 +50,7 @@ class LibroOut(BaseModel):
     paginas: Optional[int]
     pagina_actual: Optional[int]
     editorial: Optional[str]
-    anio: Optional[int]
+    primera_edicion_anio: Optional[int]
     isbn: Optional[str]
     estado: str
     formato: Optional[str]
@@ -56,10 +58,11 @@ class LibroOut(BaseModel):
     fecha_inicio: Optional[date]
     fecha_fin: Optional[date]
     ultima_edicion_anio: Optional[int]
-    ultima_edicion_detalle: Optional[str]
+    actual_edicion_anio: Optional[int]
     portada_filename: Optional[str]
     etiquetas: Optional[str]
     resena: Optional[str]
+
     creado_en: datetime
     total_segundos: Optional[int] = 0
 

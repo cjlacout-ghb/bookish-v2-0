@@ -1,9 +1,14 @@
-import { useState, memo } from 'react';
+import { useState, memo, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import TarjetaLibro from './TarjetaLibro.jsx';
 
 function CarruselLibros({ libros }) {
   const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    setIndex(0);
+  }, [libros]);
+
   const cardWidth = 240;
   const gap = 32; /* 2rem = 32px */
   const step = cardWidth + gap;

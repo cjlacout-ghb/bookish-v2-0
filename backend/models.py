@@ -22,7 +22,8 @@ class Libro(Base):
     paginas = Column(Integer)
     pagina_actual = Column(Integer, default=0)
     editorial = Column(String(300))
-    anio = Column(Integer)
+    primera_edicion_anio = Column(Integer)
+
     isbn = Column(String(20))
     formato = Column(String(50), default="analógico")
     estado = Column(Enum(EstadoLibro), default=EstadoLibro.por_leer)
@@ -31,7 +32,8 @@ class Libro(Base):
     fecha_inicio = Column(Date)
     fecha_fin = Column(Date)
     ultima_edicion_anio = Column(Integer)
-    ultima_edicion_detalle = Column(String(500))
+    actual_edicion_anio = Column(Integer)
+
     etiquetas = Column(String(500))
     resena = Column(Text)
     creado_en = Column(DateTime, default=datetime.utcnow)

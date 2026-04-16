@@ -30,18 +30,20 @@ const CAMPOS_VACIOS = {
   paginas: '',
   pagina_actual: '',
   editorial: '',
-  anio: '',
+  primera_edicion_anio: '',
+  ultima_edicion_anio: '',
+  actual_edicion_anio: '',
   isbn: '',
   formato: 'analógico',
   estado: 'por_leer',
   calificacion: 0,
   fecha_inicio: '',
   fecha_fin: '',
-  ultima_edicion_anio: '',
-  ultima_edicion_detalle: '',
   etiquetas: '',
   resena: '',
 }
+
+
 
 export default function FormLibro() {
   const { id } = useParams()
@@ -70,24 +72,26 @@ export default function FormLibro() {
     try {
       const data = await API.getLibro(id)
       setCampos({
-        titulo:      data.titulo || '',
-        autor:       data.autor || '',
-        genero:      data.genero || '',
-        paginas:     data.paginas || '',
-        pagina_actual: data.pagina_actual || '',
-        editorial:   data.editorial || '',
-        anio:        data.anio || '',
-        isbn:        data.isbn || '',
-        formato:     data.formato || 'analógico',
-        estado:      data.estado || 'por_leer',
-        calificacion: data.calificacion || 0,
-        fecha_inicio: data.fecha_inicio || '',
-        fecha_fin:   data.fecha_fin || '',
-        ultima_edicion_anio: data.ultima_edicion_anio || '',
-        ultima_edicion_detalle: data.ultima_edicion_detalle || '',
-        etiquetas:   data.etiquetas || '',
-        resena:      data.resena || '',
+        titulo:               data.titulo || '',
+        autor:                data.autor || '',
+        genero:               data.genero || '',
+        paginas:              data.paginas || '',
+        pagina_actual:        data.pagina_actual || '',
+        editorial:            data.editorial || '',
+        primera_edicion_anio: data.primera_edicion_anio || '',
+        ultima_edicion_anio:  data.ultima_edicion_anio || '',
+        actual_edicion_anio:  data.actual_edicion_anio || '',
+        isbn:                 data.isbn || '',
+        formato:              data.formato || 'analógico',
+        estado:               data.estado || 'por_leer',
+        calificacion:         data.calificacion || 0,
+        fecha_inicio:         data.fecha_inicio || '',
+        fecha_fin:            data.fecha_fin || '',
+        etiquetas:            data.etiquetas || '',
+        resena:               data.resena || '',
       })
+
+
       if (data.portada_filename) {
         setPortadaExistente(data.portada_filename)
       }
@@ -136,11 +140,31 @@ export default function FormLibro() {
     if (campos.paginas && campos.pagina_actual && parseInt(campos.pagina_actual) > parseInt(campos.paginas)) {
       nuevosErrores.pagina_actual = 'No puede ser mayor al total.'
     }
-    if (campos.anio && isNaN(parseInt(campos.anio))) nuevosErrores.anio = 'Ingresá un año válido.'
+    if (campos.primera_edicion_anio && isNaN(parseInt(campos.primera_edicion_anio))) nuevosErrores.primera_edicion_anio = 'Ingresá un año válido.'
     if (campos.ultima_edicion_anio && isNaN(parseInt(campos.ultima_edicion_anio))) nuevosErrores.ultima_edicion_anio = 'Ingresá un año válido.'
-    if (campos.anio && campos.ultima_edicion_anio && parseInt(campos.ultima_edicion_anio) < parseInt(campos.anio)) {
-      nuevosErrores.ultima_edicion_anio = 'No puede ser anterior al año original.'
+    if (campos.actual_edicion_anio && isNaN(parseInt(campos.actual_edicion_anio))) nuevosErrores.actual_edicion_anio = 'Ingresá un año válido.'
+
+    // Reglas de coherencia entre los tres campos de año
+    const aPrimera = campos.primera_edicion_anio ? parseInt(campos.primera_edicion_anio) : null
+    const aUltima  = campos.ultima_edicion_anio ? parseInt(campos.ultima_edicion_anio) : null
+    const aActual  = campos.actual_edicion_anio ? parseInt(campos.actual_edicion_anio) : null
+
+    // Regla 1: última edición ≥ primera edición
+    if (aPrimera !== null && aUltima !== null && aUltima < aPrimera) {
+      nuevosErrores.ultima_edicion_anio = 'Última edición no puede ser anterior a la primera.'
     }
+
+    // Regla 2: edición actual ≥ primera edición
+    if (aPrimera !== null && aActual !== null && aActual < aPrimera) {
+      nuevosErrores.actual_edicion_anio = 'El año de edición no puede ser anterior a la primera edición.'
+    }
+
+    // Regla 3: edición actual ≤ última edición
+    if (aUltima !== null && aActual !== null && aActual > aUltima) {
+      nuevosErrores.actual_edicion_anio = 'El año de edición no puede ser posterior a la última edición.'
+    }
+
+
     if (campos.fecha_inicio && campos.fecha_fin) {
       if (new Date(campos.fecha_fin) < new Date(campos.fecha_inicio)) {
         nuevosErrores.fecha_fin = 'F. fin debe ser igual o mayor a F. inicio.'
@@ -154,6 +178,17 @@ export default function FormLibro() {
         nuevosErrores.estado = 'Si ya empezó a leerse, el estado no puede ser "Por leer".'
       }
     }
+
+    // Validación solicitada: Leído MUST HAVE fecha de inicio y fecha fin
+    if (campos.estado === 'leido') {
+      if (!campos.fecha_inicio) {
+        nuevosErrores.fecha_inicio = 'Obligatorio para libros leídos.'
+      }
+      if (!campos.fecha_fin) {
+        nuevosErrores.fecha_fin = 'Obligatorio para libros leídos.'
+      }
+    }
+
     setErrores(nuevosErrores)
     return Object.keys(nuevosErrores).length === 0
   }
@@ -164,25 +199,25 @@ export default function FormLibro() {
     setGuardando(true)
 
     const payload = {
-      titulo:       formatTitle(campos.titulo),
-      autor:        formatAuthor(campos.autor),
-      genero:       campos.genero.trim() || null,
-
-      paginas:      campos.paginas ? parseInt(campos.paginas) : null,
-      pagina_actual: campos.pagina_actual ? parseInt(campos.pagina_actual) : 0,
-      editorial:    campos.editorial.trim() || null,
-      anio:         campos.anio ? parseInt(campos.anio) : null,
-      isbn:         campos.isbn.trim() || null,
-      formato:      campos.formato,
-      estado:       campos.estado,
-      calificacion: campos.calificacion,
-      fecha_inicio: campos.fecha_inicio || null,
-      fecha_fin:    campos.fecha_fin || null,
-      ultima_edicion_anio: campos.ultima_edicion_anio ? parseInt(campos.ultima_edicion_anio) : null,
-      ultima_edicion_detalle: campos.ultima_edicion_detalle.trim() || null,
-      etiquetas:    campos.etiquetas.trim() || null,
-      resena:       campos.resena.trim() || null,
+      titulo:               formatTitle(campos.titulo),
+      autor:                formatAuthor(campos.autor),
+      genero:               campos.genero.trim() || null,
+      paginas:              campos.paginas ? parseInt(campos.paginas) : null,
+      pagina_actual:        campos.pagina_actual ? parseInt(campos.pagina_actual) : 0,
+      editorial:            campos.editorial.trim() || null,
+      primera_edicion_anio: campos.primera_edicion_anio ? parseInt(campos.primera_edicion_anio) : null,
+      ultima_edicion_anio:  campos.ultima_edicion_anio ? parseInt(campos.ultima_edicion_anio) : null,
+      actual_edicion_anio:  campos.actual_edicion_anio ? parseInt(campos.actual_edicion_anio) : null,
+      isbn:                 campos.isbn.trim() || null,
+      formato:              campos.formato,
+      estado:               campos.estado,
+      calificacion:         campos.calificacion,
+      fecha_inicio:         campos.fecha_inicio || null,
+      fecha_fin:            campos.fecha_fin || null,
+      etiquetas:            campos.etiquetas.trim() || null,
+      resena:               campos.resena.trim() || null,
     }
+
 
     try {
       let libroGuardado
@@ -304,17 +339,18 @@ export default function FormLibro() {
                 {errores.paginas && <span className="campo__mensaje-error">{errores.paginas}</span>}
               </div>
 
-              <div className="campo">
+              <div className={`campo${errores.actual_edicion_anio ? ' campo--error' : ''}`}>
                 <label className="campo__etiqueta" htmlFor="f-ultima-detalle">edición (año)</label>
                 <input
                   id="f-ultima-detalle"
-                  name="ultima_edicion_detalle"
-                  type="text"
+                  name="actual_edicion_anio"
+                  type="number"
                   className="campo__entrada"
                   placeholder="Ex: 2024"
-                  value={campos.ultima_edicion_detalle}
+                  value={campos.actual_edicion_anio}
                   onChange={handleCampo}
                 />
+                {errores.actual_edicion_anio && <span className="campo__mensaje-error">{errores.actual_edicion_anio}</span>}
               </div>
             </div>
 
@@ -394,7 +430,7 @@ export default function FormLibro() {
 
             {/* Fechas */}
             <div className="form-libro__fila-cuadruple">
-              <div className="campo">
+              <div className={`campo${errores.fecha_inicio ? ' campo--error' : ''}`}>
                 <label className="campo__etiqueta" htmlFor="f-fecha-inicio">fecha inicio</label>
                 <DatePicker
                   selected={campos.fecha_inicio ? new Date(campos.fecha_inicio + 'T12:00:00') : null}
@@ -407,6 +443,7 @@ export default function FormLibro() {
                   id="f-fecha-inicio"
                   disabled={formHabilitado ? undefined : true}
                 />
+                {errores.fecha_inicio && <span className="campo__mensaje-error">{errores.fecha_inicio}</span>}
               </div>
 
               <div className="campo">
@@ -443,10 +480,10 @@ export default function FormLibro() {
 
             {/* Última Edición (Bibliográfico) */}
             <div className="form-libro__fila">
-              <div className={`campo${errores.anio ? ' campo--error' : ''}`}>
+              <div className={`campo${errores.primera_edicion_anio ? ' campo--error' : ''}`}>
                 <label className="campo__etiqueta" htmlFor="f-anio">primera edición (año)</label>
-                <input id="f-anio" name="anio" type="number" min="1" max="2099" className="campo__entrada" placeholder="Ex: 1945" value={campos.anio} onChange={handleCampo} />
-                {errores.anio && <span className="campo__mensaje-error">{errores.anio}</span>}
+                <input id="f-anio" name="primera_edicion_anio" type="number" min="1" max="2099" className="campo__entrada" placeholder="Ex: 1945" value={campos.primera_edicion_anio} onChange={handleCampo} />
+                {errores.primera_edicion_anio && <span className="campo__mensaje-error">{errores.primera_edicion_anio}</span>}
               </div>
 
               <div className={`campo${errores.ultima_edicion_anio ? ' campo--error' : ''}`}>
@@ -455,7 +492,7 @@ export default function FormLibro() {
                   id="f-ultima-anio"
                   name="ultima_edicion_anio"
                   type="number"
-                  min={campos.anio || 1}
+                  min={1}
                   max="2099"
                   className="campo__entrada"
                   placeholder="Ex: 2021"

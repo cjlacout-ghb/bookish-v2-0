@@ -229,12 +229,13 @@ export default function DetalleLibro() {
                     </span>
                   </div>
                 )}
-                {(libro.ultima_edicion_detalle || libro.anio) && (
+                {(libro.actual_edicion_anio || libro.primera_edicion_anio) && (
                   <div className="atributo">
                     <span className="atributo__clave">Año</span>
-                    <span className="atributo__valor">{libro.ultima_edicion_detalle || libro.anio}</span>
+                    <span className="atributo__valor">{libro.actual_edicion_anio || libro.primera_edicion_anio}</span>
                   </div>
                 )}
+
                 {libro.isbn && (
                   <div className="atributo">
                     <span className="atributo__clave">ISBN</span>

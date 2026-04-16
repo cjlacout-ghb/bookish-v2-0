@@ -75,19 +75,19 @@ export default function Biblioteca() {
 
             {stats && (
               <div className="bib-stats-ledger">
-                <div className="bib-stat-col">
+                <div className="bib-stat-col" onClick={() => setFiltro('todos')} style={{ cursor: 'pointer' }}>
                   <span className="bib-stat-val">{stats.total_libros}</span>
                   <span className="bib-stat-label">TOTAL LIBROS</span>
                 </div>
-                <div className="bib-stat-col">
+                <div className="bib-stat-col" onClick={() => setFiltro('leido')} style={{ cursor: 'pointer' }}>
                   <span className="bib-stat-val">{stats.libros_leidos}</span>
                   <span className="bib-stat-label">LEÍDOS</span>
                 </div>
-                <div className="bib-stat-col">
+                <div className="bib-stat-col" onClick={() => setFiltro('leyendo')} style={{ cursor: 'pointer' }}>
                   <span className="bib-stat-val">{stats.libros_leyendo}</span>
                   <span className="bib-stat-label">LEYENDO</span>
                 </div>
-                <div className="bib-stat-col">
+                <div className="bib-stat-col" onClick={() => setFiltro('por_leer')} style={{ cursor: 'pointer' }}>
                   <span className="bib-stat-val">{stats.libros_por_leer}</span>
                   <span className="bib-stat-label">POR LEER</span>
                 </div>

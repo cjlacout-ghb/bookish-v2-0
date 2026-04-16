@@ -44,7 +44,7 @@ def _libro_dict(libro: Libro, total_segundos: int) -> dict:
         "paginas": libro.paginas,
         "pagina_actual": libro.pagina_actual,
         "editorial": libro.editorial,
-        "anio": libro.anio,
+        "primera_edicion_anio": libro.primera_edicion_anio,
         "isbn": libro.isbn,
         "estado": libro.estado,
         "formato": libro.formato,
@@ -52,13 +52,14 @@ def _libro_dict(libro: Libro, total_segundos: int) -> dict:
         "fecha_inicio": libro.fecha_inicio,
         "fecha_fin": libro.fecha_fin,
         "ultima_edicion_anio": libro.ultima_edicion_anio,
-        "ultima_edicion_detalle": libro.ultima_edicion_detalle,
+        "actual_edicion_anio": libro.actual_edicion_anio,
         "portada_filename": libro.portada_filename,
         "etiquetas": libro.etiquetas,
         "resena": libro.resena,
         "creado_en": libro.creado_en,
         "total_segundos": total_segundos,
     }
+
 
 
 def libro_to_out(libro: Libro, db: Session) -> dict:
