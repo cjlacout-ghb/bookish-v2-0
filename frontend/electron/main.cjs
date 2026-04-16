@@ -16,6 +16,11 @@ function getCoversPath() {
   return path.join(documents, 'Bookish', 'data', 'portadas');
 }
 
+function getCapturasPath() {
+  const documents = app.getPath('documents');
+  return path.join(documents, 'Bookish', 'data', 'capturas');
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // STEP 2 — Register a custom protocol "app://"
 // This intercepts requests like app://covers/foto.jpg and serves the file
@@ -115,8 +120,14 @@ app.whenReady().then(() => {
 
     // Only handle covers requests — everything else falls through
     if (url.hostname === 'covers') {
-      const filename = url.pathname.replace(/^\//, ''); // remove leading slash
-      const filePath = path.join(getCoversPath(), filename);
+      const filename = url.pathname.replace(/^\//, '');
+      const filePath = path.join(getCoversPath(), filename).replace(/\\/g, '/');
+      return net.fetch(`file:///${filePath}`);
+    }
+
+    if (url.hostname === 'capturas') {
+      const filename = url.pathname.replace(/^\//, '');
+      const filePath = path.join(getCapturasPath(), filename).replace(/\\/g, '/');
       return net.fetch(`file:///${filePath}`);
     }
 

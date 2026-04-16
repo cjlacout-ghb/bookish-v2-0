@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { API } from '../services/api.js'
+import { API, getFileURL } from '../services/api.js'
+import { formatTitle, formatAuthor } from '../services/textUtils.js'
+
 
 export default function ModalColeccion({ filtro, onClose }) {
   const navigate = useNavigate()
@@ -21,7 +23,8 @@ export default function ModalColeccion({ filtro, onClose }) {
             return listado.includes(filtro.valor.toLowerCase())
           } else if (filtro.tipo === 'género') {
             if (!libro.genero) return false
-            return libro.genero.toLowerCase() === filtro.valor.toLowerCase()
+            const listado = libro.genero.split(',').map(g => g.trim().toLowerCase())
+            return listado.includes(filtro.valor.toLowerCase())
           } else if (filtro.tipo === 'autor') {
             if (!libro.autor) return false
             return libro.autor.toLowerCase() === filtro.valor.toLowerCase()
@@ -56,8 +59,9 @@ export default function ModalColeccion({ filtro, onClose }) {
         <div className="tag-modal-cabecera">
           <h3 className="tag-modal-titulo">
             <span className="tag-modal-ornamento">◈</span>
-            {tipoCapitalizado}: <span style={{ color: 'var(--oro-primario)' }}>{filtro.valor}</span>
+            {tipoCapitalizado}: <span style={{ color: 'var(--oro-primario)' }}>{filtro.tipo === 'autor' ? formatAuthor(filtro.valor) : (filtro.tipo === 'título' ? formatTitle(filtro.valor) : filtro.valor)}</span>
           </h3>
+
           <button className="tag-modal-cerrar" onClick={onClose}>✕</button>
         </div>
 
@@ -79,14 +83,14 @@ export default function ModalColeccion({ filtro, onClose }) {
               >
                 <div className="tag-modal-portada">
                   {libro.portada_filename ? (
-                    <img src={`app://covers/${libro.portada_filename}`} alt={libro.titulo} />
+                    <img src={getFileURL(libro.portada_filename)} alt={libro.titulo} />
                   ) : (
                     <span className="tarjeta-libro__sin-portada-ornamento" style={{fontSize: '1.2rem'}}>◆</span>
                   )}
                 </div>
                 <div className="tag-modal-info">
-                  <h4 className="tag-modal-libro-titulo">{libro.titulo}</h4>
-                  <p className="tag-modal-libro-autor">{libro.autor}</p>
+                  <h4 className="tag-modal-libro-titulo">{formatTitle(libro.titulo)}</h4>
+                  <p className="tag-modal-libro-autor">{formatAuthor(libro.autor)}</p>
                   <span className="etiqueta-chip etiqueta-chip--activa" style={{fontSize: '0.65rem', padding: '0.1rem 0.3rem', marginTop: 'auto', display: 'inline-block', width: 'fit-content'}}>
                     {filtro.valor}
                   </span>

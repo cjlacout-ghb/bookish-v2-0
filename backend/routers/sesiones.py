@@ -2,13 +2,18 @@
 sesiones.py — Timer control, session management, and reading reports.
 Stage 1.5 — replaces the original minimal router.
 """
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Form, File, UploadFile
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from datetime import datetime, date, timedelta, timezone
 import calendar
 from zoneinfo import ZoneInfo
+import os
+import shutil
+import uuid
+
+from config import CAPTURAS_DIR
 
 TZ_BA = ZoneInfo("America/Argentina/Buenos_Aires")
 
@@ -130,7 +135,11 @@ def timer_resume(libro_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/libros/{libro_id}/timer/stop", response_model=SesionOut)
-def timer_stop(libro_id: int, body: StopTimerBody = StopTimerBody(), db: Session = Depends(get_db)):
+def timer_stop(
+    libro_id: int, 
+    session_note: Optional[str] = Form(None),
+    captura: Optional[UploadFile] = File(None),
+    db: Session = Depends(get_db)):
     _get_libro_or_404(libro_id, db)
     sesion = _active_session(libro_id, db)
     if not sesion:
@@ -150,7 +159,16 @@ def timer_stop(libro_id: int, body: StopTimerBody = StopTimerBody(), db: Session
     sesion.finalizado_en = now
     sesion.duracion_segundos = net_seconds
     sesion.is_active = False
-    sesion.session_note = body.session_note
+    sesion.session_note = session_note
+    
+    # Save image if provided
+    if captura:
+        ext = os.path.splitext(captura.filename)[1]
+        unique_name = f"captura_{uuid.uuid4().hex}{ext}"
+        filepath = os.path.join(CAPTURAS_DIR, unique_name)
+        with open(filepath, "wb") as buffer:
+            shutil.copyfileobj(captura.file, buffer)
+        sesion.captura_filename = unique_name
 
     db.commit()
     db.refresh(sesion)
@@ -168,23 +186,37 @@ def sesiones_activas(db: Session = Depends(get_db)):
 # ── Session CRUD (edit / delete) ──────────────────────────────────────────────
 
 @router.put("/sessions/{sesion_id}", response_model=SesionOut)
-def editar_sesion(sesion_id: int, datos: SesionUpdate, db: Session = Depends(get_db)):
+def editar_sesion(
+    sesion_id: int, 
+    iniciado_en: Optional[datetime] = Form(None),
+    finalizado_en: Optional[datetime] = Form(None),
+    session_note: Optional[str] = Form(None),
+    captura: Optional[UploadFile] = File(None),
+    db: Session = Depends(get_db)):
     sesion = _get_sesion_or_404(sesion_id, db)
-    if datos.iniciado_en is not None:
-        sesion.iniciado_en = datos.iniciado_en
-    if datos.finalizado_en is not None:
-        sesion.finalizado_en = datos.finalizado_en
-    if datos.session_note is not None:
-        sesion.session_note = datos.session_note
+    
+    if iniciado_en is not None:
+        sesion.iniciado_en = iniciado_en.replace(tzinfo=None)
+    if finalizado_en is not None:
+        sesion.finalizado_en = finalizado_en.replace(tzinfo=None)
+    if session_note is not None:
+        sesion.session_note = session_note
+
     # Recompute duration if both timestamps present
     if sesion.finalizado_en and sesion.iniciado_en:
-        # Avoid naive/aware mix if one comes from API and other from DB
         fin = sesion.finalizado_en.replace(tzinfo=None) if sesion.finalizado_en.tzinfo else sesion.finalizado_en
         ini = sesion.iniciado_en.replace(tzinfo=None) if sesion.iniciado_en.tzinfo else sesion.iniciado_en
         computed = int((fin - ini).total_seconds())
         sesion.duracion_segundos = max(0, computed - (sesion.pause_offset_seconds or 0))
-    elif datos.duracion_segundos is not None:
-        sesion.duracion_segundos = datos.duracion_segundos
+        
+    if captura:
+        ext = os.path.splitext(captura.filename)[1]
+        unique_name = f"captura_{uuid.uuid4().hex}{ext}"
+        filepath = os.path.join(CAPTURAS_DIR, unique_name)
+        with open(filepath, "wb") as buffer:
+            shutil.copyfileobj(captura.file, buffer)
+        sesion.captura_filename = unique_name
+
     db.commit()
     db.refresh(sesion)
     return sesion
@@ -208,6 +240,7 @@ def _sesion_to_reporte(s: SesionLectura) -> SesionReporteOut:
         finalizado_en=s.finalizado_en,
         duracion_segundos=s.duracion_segundos or 0,
         session_note=s.session_note,
+        captura_filename=s.captura_filename,
     )
 
 

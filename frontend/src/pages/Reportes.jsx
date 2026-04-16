@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import Header from '../components/Header.jsx'
 import { formatearTiempo, formatearRelojBA, getHoyBA } from '../components/Timer.jsx'
 import { API } from '../services/api.js'
+import { formatTitle } from '../services/textUtils.js'
+
 import DatePicker, { registerLocale } from 'react-datepicker'
 import { es } from 'date-fns/locale/es'
 import "react-datepicker/dist/react-datepicker.css"
@@ -59,8 +61,9 @@ function TabDia() {
   const porLibro = {}
   sesiones.forEach(s => {
     if (!porLibro[s.libro_id]) {
-      porLibro[s.libro_id] = { titulo: s.libro_titulo, segundos: 0 }
+      porLibro[s.libro_id] = { titulo: formatTitle(s.libro_titulo), segundos: 0 }
     }
+
     porLibro[s.libro_id].segundos += s.duracion_segundos || 0
   })
   const librosArr = Object.values(porLibro).sort((a, b) => b.segundos - a.segundos)
@@ -134,7 +137,7 @@ function TabDia() {
               return (
                 <div key={s.id} className="reporte-sesion-fila">
                   <div className="reporte-sesion-info">
-                    <span className="reporte-sesion-titulo">{s.libro_titulo}</span>
+                    <span className="reporte-sesion-titulo">{formatTitle(s.libro_titulo)}</span>
                     <span className="reporte-sesion-rango">{inicio} – {fin}</span>
                     {s.session_note && (
                       <span className="reporte-sesion-nota">"{s.session_note}"</span>

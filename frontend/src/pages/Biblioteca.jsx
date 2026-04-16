@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import TarjetaLibro from '../components/TarjetaLibro.jsx'
 import CarruselLibros from '../components/CarruselLibros.jsx'
 import Header from '../components/Header.jsx'
@@ -15,10 +15,17 @@ const FILTROS = [
 
 export default function Biblioteca() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [libros, setLibros] = useState([])
   const [stats, setStats] = useState(null)
-  const [filtro, setFiltro] = useState('leyendo')
+  const [filtro, setFiltro] = useState(location.state?.filtro || 'leyendo')
   const [cargando, setCargando] = useState(true)
+
+  useEffect(() => {
+    if (location.state?.filtro) {
+      setFiltro(location.state.filtro)
+    }
+  }, [location.state])
 
   useEffect(() => {
     cargarDatos()

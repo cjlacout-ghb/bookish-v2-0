@@ -1,17 +1,11 @@
 import { useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
-import { formatearTiempo } from './Timer.jsx'
+import { getFileURL } from '../services/api'
+import { formatTitle, formatAuthor } from '../services/textUtils'
 
-const ESTADOS_ETIQUETA = {
-  leyendo:  'Leyendo',
-  leido:    'Leído',
-  por_leer: 'Por leer',
-}
 
 /**
  * Tarjeta de libro para la grilla de la biblioteca.
- * Props:
- *   libro — objeto completo del libro
  */
 function TarjetaLibro({ libro }) {
   const navigate = useNavigate()
@@ -32,7 +26,7 @@ function TarjetaLibro({ libro }) {
       <div className="noir-card-img-wrap">
         {tienePortada ? (
           <img
-            src={`app://covers/${libro.portada_filename}`}
+            src={getFileURL(libro.portada_filename)}
             alt={`Portada de ${libro.titulo}`}
           />
         ) : (
@@ -58,8 +52,9 @@ function TarjetaLibro({ libro }) {
 
       {/* Info */}
       <div className="noir-card-content">
-        <h4 className="noir-card-title">{libro.titulo}</h4>
-        <p className="noir-card-author">{libro.autor}</p>
+        <h4 className="noir-card-title">{formatTitle(libro.titulo)}</h4>
+        <p className="noir-card-author">{formatAuthor(libro.autor)}</p>
+
 
         <button className="noir-card-btn">
           {libro.estado === 'leyendo' ? 'Continuar' : (libro.estado === 'por_leer' ? 'Comenzar' : 'Ver Detalles')}

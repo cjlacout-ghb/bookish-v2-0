@@ -37,5 +37,9 @@ BASE_DIR = os.path.dirname(__file__)
 COVERS_DIR = os.path.join(DATA_DIR, "portadas")
 os.makedirs(COVERS_DIR, exist_ok=True)
 
+# Directorio donde se almacenan las capturas de sesiones de lectura
+CAPTURAS_DIR = os.path.join(DATA_DIR, "capturas")
+os.makedirs(CAPTURAS_DIR, exist_ok=True)
+
 # Tamaño máximo permitido para imágenes de portada (5 MB)
 MAX_COVER_SIZE_BYTES = 5 * 1024 * 1024  # Fix-11

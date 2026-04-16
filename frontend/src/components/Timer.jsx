@@ -88,6 +88,13 @@ export const IconDetener = () => (
   </svg>
 )
 
+export const IconCamera = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="square" strokeLinejoin="miter">
+    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+    <circle cx="12" cy="13" r="4"></circle>
+  </svg>
+)
+
 // ── Estado del timer ──────────────────────────────────────────────────────────
 // idle → running → paused → (stop shows note input) → idle
 
@@ -113,6 +120,7 @@ export default function Timer({
   const [segundosActuales, setSegundosActuales] = useState(0)
   const [acumulado, setAcumulado] = useState(totalSegundos)
   const [nota, setNota] = useState('')
+  const [capturaFile, setCapturaFile] = useState(null)
   const [guardando, setGuardando] = useState(false)
   const [error, setError] = useState('')
 
@@ -127,9 +135,9 @@ export default function Timer({
     setAcumulado(totalSegundos)
   }, [totalSegundos])
 
-  // ── Restore active session on mount ───────────────────────────────────────
+  // ── Restore active session on mount or when loaded ──────────────────────────
   useEffect(() => {
-    if (sesionActiva && sesionActiva.is_active) {
+    if (sesionActiva && sesionActiva.is_active && estado === 'idle') {
       const now = Date.now()
       const inicio = parsearFechaUTC(sesionActiva.iniciado_en)
       const offset = (sesionActiva.pause_offset_seconds || 0) * 1000
@@ -150,8 +158,7 @@ export default function Timer({
         startInterval()
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [sesionActiva])
 
   // Cleanup interval on unmount
   useEffect(() => {
@@ -236,18 +243,20 @@ export default function Timer({
     if (estado === 'running') stopInterval()
     setEstado('stopping')
     setNota('')
+    setCapturaFile(null)
   }
 
   async function confirmarStop() {
     setError('')
     setGuardando(true)
     try {
-      const sesion = await API.timerStop(libroId, nota.trim() || null)
+      const sesion = await API.timerStop(libroId, nota.trim() || null, capturaFile)
       const nuevoAcumulado = acumulado + (sesion.duracion_segundos || 0)
       setAcumulado(nuevoAcumulado)
       setSegundosActuales(0)
       segundosAcumRef.current = 0
       setNota('')
+      setCapturaFile(null)
       setEstado('idle')
       onSesionGuardada?.(nuevoAcumulado)
       onSesionActiva?.(null)
@@ -341,6 +350,36 @@ export default function Timer({
               onChange={e => setNota(e.target.value)}
               rows={2}
             />
+            
+            <div className="campo timer__file-upload" style={{ marginBottom: 'var(--espacio-sm)' }}>
+              <label 
+                className="campo__entrada" 
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.5rem', 
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  color: capturaFile ? 'var(--texto-principal)' : 'var(--texto-secundario)'
+                }}
+              >
+                <IconCamera />
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {capturaFile ? capturaFile.name : 'Adjuntar captura de página leída...'}
+                </span>
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  style={{ display: 'none' }} 
+                  onChange={e => {
+                    if (e.target.files && e.target.files[0]) {
+                      setCapturaFile(e.target.files[0])
+                    }
+                  }}
+                />
+              </label>
+            </div>
+
             <div style={{ display: 'flex', gap: 'var(--espacio-sm)' }}>
               <button
                 id={`timer-btn-confirmar-stop-${libroId}`}

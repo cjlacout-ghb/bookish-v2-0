@@ -765,6 +765,38 @@ input, textarea, select {
   text-decoration-color: var(--oro-primario);
 }
 
+.atributo__valor--genero {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.6rem;
+  background: linear-gradient(135deg, var(--sup-alta), var(--superficie));
+  border: 1px solid var(--oro-oscuro);
+  position: relative;
+  font-family: var(--fuente-titular);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  color: var(--oro-primario);
+  width: fit-content;
+  cursor: pointer;
+  transition: all var(--transicion);
+  white-space: nowrap; /* Evita que el género se rompa en dos líneas */
+}
+
+.atributo__valor--genero::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border: 0.5px solid var(--oro-tenue);
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.atributo__valor--genero:hover {
+  border-color: var(--oro-silenciado);
+  background: linear-gradient(135deg, var(--sup-max), var(--sup-media));
+  transform: translateY(-1px);
+}
+
 .texto-interactivo {
   cursor: pointer;
   transition: color var(--transicion);

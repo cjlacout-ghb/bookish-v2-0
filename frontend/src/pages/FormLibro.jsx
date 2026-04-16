@@ -6,7 +6,9 @@ import "react-datepicker/dist/react-datepicker.css"
 import Estrellas from '../components/Estrellas.jsx'
 import Header from '../components/Header.jsx'
 import { getHoyBA } from '../components/Timer.jsx'
-import { API } from '../services/api.js'
+import { API, getFileURL } from '../services/api.js'
+import { formatTitle, formatAuthor } from '../services/textUtils.js'
+
 
 registerLocale('es', es)
 
@@ -144,6 +146,14 @@ export default function FormLibro() {
         nuevosErrores.fecha_fin = 'F. fin debe ser igual o mayor a F. inicio.'
       }
     }
+
+    // Validación solicitada: Por leer no puede tener fecha de inicio pasada
+    if (campos.estado === 'por_leer' && campos.fecha_inicio) {
+      const hoy = getHoyBA()
+      if (campos.fecha_inicio < hoy) {
+        nuevosErrores.estado = 'Si ya empezó a leerse, el estado no puede ser "Por leer".'
+      }
+    }
     setErrores(nuevosErrores)
     return Object.keys(nuevosErrores).length === 0
   }
@@ -154,9 +164,10 @@ export default function FormLibro() {
     setGuardando(true)
 
     const payload = {
-      titulo:       campos.titulo.trim(),
-      autor:        campos.autor.trim(),
+      titulo:       formatTitle(campos.titulo),
+      autor:        formatAuthor(campos.autor),
       genero:       campos.genero.trim() || null,
+
       paginas:      campos.paginas ? parseInt(campos.paginas) : null,
       pagina_actual: campos.pagina_actual ? parseInt(campos.pagina_actual) : 0,
       editorial:    campos.editorial.trim() || null,
@@ -260,6 +271,7 @@ export default function FormLibro() {
                   onChange={handleCampo}
                   autoFocus={!esEdicion}
                   rows={1}
+                  style={{ textTransform: 'uppercase' }}
                 />
                 {errores.titulo && <span className="campo__mensaje-error">{errores.titulo}</span>}
               </div>
@@ -282,7 +294,7 @@ export default function FormLibro() {
             {/* Género + Páginas + Año */}
             <div className="form-libro__fila-triple">
               <div className="campo">
-                <label className="campo__etiqueta" htmlFor="f-genero">género</label>
+                <label className="campo__etiqueta" htmlFor="f-genero">género <span style={{ opacity: 0.5, fontSize: '0.85em', fontWeight: 'normal' }}>(separados por coma)</span></label>
                 <input id="f-genero" name="genero" className="campo__entrada" placeholder="Novela, Ensayo..." value={campos.genero} onChange={handleCampo} />
               </div>
 
@@ -292,10 +304,17 @@ export default function FormLibro() {
                 {errores.paginas && <span className="campo__mensaje-error">{errores.paginas}</span>}
               </div>
 
-              <div className={`campo${errores.anio ? ' campo--error' : ''}`}>
-                <label className="campo__etiqueta" htmlFor="f-anio">año</label>
-                <input id="f-anio" name="anio" type="number" min="1" max="2099" className="campo__entrada" placeholder="2024" value={campos.anio} onChange={handleCampo} />
-                {errores.anio && <span className="campo__mensaje-error">{errores.anio}</span>}
+              <div className="campo">
+                <label className="campo__etiqueta" htmlFor="f-ultima-detalle">edición (año)</label>
+                <input
+                  id="f-ultima-detalle"
+                  name="ultima_edicion_detalle"
+                  type="text"
+                  className="campo__entrada"
+                  placeholder="Ex: 2024"
+                  value={campos.ultima_edicion_detalle}
+                  onChange={handleCampo}
+                />
               </div>
             </div>
 
@@ -327,7 +346,7 @@ export default function FormLibro() {
 
             {/* Estado + Página + Calificación */}
             <div className="form-libro__fila-triple">
-              <div className="campo">
+              <div className={`campo${errores.estado ? ' campo--error' : ''}`}>
                 <label className="campo__etiqueta" htmlFor="f-estado">estado</label>
                 <select
                   id="f-estado"
@@ -340,6 +359,7 @@ export default function FormLibro() {
                     <option key={op.valor} value={op.valor}>{op.etiqueta}</option>
                   ))}
                 </select>
+                {errores.estado && <span className="campo__mensaje-error">{errores.estado}</span>}
               </div>
 
               {campos.estado === 'leyendo' && (
@@ -423,7 +443,13 @@ export default function FormLibro() {
 
             {/* Última Edición (Bibliográfico) */}
             <div className="form-libro__fila">
-              <div className={`campo${errores.ultima_edicion_anio ? ' campo--error' : ''}`} style={{ flex: '0 0 160px' }}>
+              <div className={`campo${errores.anio ? ' campo--error' : ''}`}>
+                <label className="campo__etiqueta" htmlFor="f-anio">primera edición (año)</label>
+                <input id="f-anio" name="anio" type="number" min="1" max="2099" className="campo__entrada" placeholder="Ex: 1945" value={campos.anio} onChange={handleCampo} />
+                {errores.anio && <span className="campo__mensaje-error">{errores.anio}</span>}
+              </div>
+
+              <div className={`campo${errores.ultima_edicion_anio ? ' campo--error' : ''}`}>
                 <label className="campo__etiqueta" htmlFor="f-ultima-anio">última edición (año)</label>
                 <input
                   id="f-ultima-anio"
@@ -432,30 +458,18 @@ export default function FormLibro() {
                   min={campos.anio || 1}
                   max="2099"
                   className="campo__entrada"
-                  placeholder="2024"
+                  placeholder="Ex: 2021"
                   value={campos.ultima_edicion_anio}
                   onChange={handleCampo}
                 />
                 {errores.ultima_edicion_anio && <span className="campo__mensaje-error">{errores.ultima_edicion_anio}</span>}
-              </div>
-              <div className="campo">
-                <label className="campo__etiqueta" htmlFor="f-ultima-detalle">detalles de última edición</label>
-                <input
-                  id="f-ultima-detalle"
-                  name="ultima_edicion_detalle"
-                  type="text"
-                  className="campo__entrada"
-                  placeholder="Ej: Edición del 50 aniversario, tapa dura..."
-                  value={campos.ultima_edicion_detalle}
-                  onChange={handleCampo}
-                />
               </div>
             </div>
 
             {/* Etiquetas */}
             <div className="campo form-libro__campo-unico">
               <label className="campo__etiqueta" htmlFor="f-etiquetas">
-                etiquetas
+                etiquetas <span style={{ opacity: 0.5, fontSize: '0.85em', fontWeight: 'normal' }}>(separadas por coma)</span>
               </label>
               <input
                 id="f-etiquetas"
@@ -487,7 +501,7 @@ export default function FormLibro() {
               {(portadaPreview || portadaExistente) && (
                 <div className="form-libro__portada-preview">
                   <img
-                    src={portadaPreview || `app://covers/${portadaExistente}`}
+                    src={portadaPreview || getFileURL(portadaExistente)}
                     alt="Vista previa de portada"
                   />
                 </div>

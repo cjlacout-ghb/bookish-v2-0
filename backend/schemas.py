@@ -107,6 +107,7 @@ class SesionOut(BaseModel):
     paused_at: Optional[datetime] = None
     pause_offset_seconds: int = 0
     session_note: Optional[str] = None
+    captura_filename: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -122,6 +123,7 @@ class SesionActivaOut(BaseModel):
     paused_at: Optional[datetime] = None
     pause_offset_seconds: int = 0
     session_note: Optional[str] = None
+    captura_filename: Optional[str] = None
     libro: LibroResumen
 
     class Config:
@@ -155,6 +157,7 @@ class SesionReporteOut(BaseModel):
     finalizado_en: Optional[datetime]
     duracion_segundos: int
     session_note: Optional[str]
+    captura_filename: Optional[str] = None
 
 class ReporteDia(BaseModel):
     fecha: str

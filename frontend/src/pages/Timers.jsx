@@ -2,7 +2,9 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from '../components/Header.jsx'
 import { formatearCronometro, formatearTiempo, formatearRelojBA, getHoyBA, IconIniciar, IconPausar, IconDetener } from '../components/Timer.jsx'
-import { API } from '../services/api.js'
+import { API, getCapturaURL } from '../services/api.js'
+import { formatTitle, formatAuthor } from '../services/textUtils.js'
+
 
 /* ── Live counter for a single active session card ──────────────────────── */
 function ContadorVivo({ sesion }) {
@@ -41,85 +43,7 @@ function ContadorVivo({ sesion }) {
   )
 }
 
-/* ── Modal to edit a completed session ──────────────────────────────────── */
-function ModalEditarSesion({ sesion, onCerrar, onGuardada }) {
-  const [iniciado, setIniciado] = useState(
-    sesion.iniciado_en ? sesion.iniciado_en.slice(0, 16) : ''
-  )
-  const [finalizado, setFinalizado] = useState(
-    sesion.finalizado_en ? sesion.finalizado_en.slice(0, 16) : ''
-  )
-  const [nota, setNota] = useState(sesion.session_note || '')
-  const [guardando, setGuardando] = useState(false)
-  const [error, setError] = useState('')
-
-  async function guardar() {
-    setError('')
-    setGuardando(true)
-    try {
-      const data = {}
-      if (iniciado) data.iniciado_en = new Date(iniciado).toISOString()
-      if (finalizado) data.finalizado_en = new Date(finalizado).toISOString()
-      data.session_note = nota.trim() || null
-      const updated = await API.editarSesion(sesion.id, data)
-      onGuardada(updated)
-    } catch (e) {
-      setError(e.message || 'Error al guardar')
-    } finally {
-      setGuardando(false)
-    }
-  }
-
-  return (
-    <div className="modal-overlay" onClick={onCerrar}>
-      <div className="modal-caja" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2 className="modal-titulo">◆ Editar Sesión</h2>
-          <button className="modal-cerrar" onClick={onCerrar}>✕</button>
-        </div>
-        <div className="modal-cuerpo" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div className="campo">
-            <label className="campo__etiqueta">Inicio</label>
-            <input
-              type="datetime-local"
-              className="campo__entrada"
-              style={{ border: '1px solid var(--oro-oscuro)', padding: '0.5rem', background: 'var(--sup-alta)' }}
-              value={iniciado}
-              onChange={e => setIniciado(e.target.value)}
-            />
-          </div>
-          <div className="campo">
-            <label className="campo__etiqueta">Fin</label>
-            <input
-              type="datetime-local"
-              className="campo__entrada"
-              style={{ border: '1px solid var(--oro-oscuro)', padding: '0.5rem', background: 'var(--sup-alta)' }}
-              value={finalizado}
-              onChange={e => setFinalizado(e.target.value)}
-            />
-          </div>
-          <div className="campo">
-            <label className="campo__etiqueta">Nota</label>
-            <textarea
-              className="campo__entrada campo__entrada--textarea"
-              rows={3}
-              value={nota}
-              onChange={e => setNota(e.target.value)}
-              placeholder="Nota opcional…"
-            />
-          </div>
-          {error && <p style={{ color: 'var(--texto-error)', fontSize: '0.85rem' }}>✕ {error}</p>}
-        </div>
-        <div className="modal-pie" style={{ display: 'flex', gap: '0.8rem', justifyContent: 'flex-end' }}>
-          <button className="btn btn-secundario" onClick={onCerrar}>Cancelar</button>
-          <button className="btn btn-primario" onClick={guardar} disabled={guardando}>
-            {guardando ? '...' : 'Guardar'}
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
+import ModalEditarSesion from '../components/ModalEditarSesion.jsx'
 
 /* ── Main page ───────────────────────────────────────────────────────────── */
 export default function Sesiones() {
@@ -235,9 +159,10 @@ export default function Sesiones() {
                         onClick={() => navigate(`/libro/${sesion.libro_id}`)}
                         style={{ cursor: 'pointer' }}
                       >
-                        {sesion.libro?.titulo || '—'}
+                        {formatTitle(sesion.libro?.titulo || '—')}
                       </p>
-                      <p className="timers-card__autor">{sesion.libro?.autor || ''}</p>
+                      <p className="timers-card__autor">{formatAuthor(sesion.libro?.autor || '')}</p>
+
                       <ContadorVivo sesion={sesion} />
                       {sesion.paused_at && (
                         <span className="timers-card__badge-pausa"><IconPausar /> En pausa</span>
@@ -298,10 +223,22 @@ export default function Sesiones() {
                   return (
                     <div key={sesion.id} className="timers-hoy__fila">
                       <div className="timers-hoy__libro">
-                        <span className="timers-hoy__titulo">{sesion.libro_titulo}</span>
+                        <span className="timers-hoy__titulo">{formatTitle(sesion.libro_titulo)}</span>
+
                         <span className="timers-hoy__rango">{inicio} – {fin}</span>
                         {sesion.session_note && (
                           <span className="timers-hoy__nota">"{sesion.session_note}"</span>
+                        )}
+                        {sesion.captura_filename && (
+                          <div style={{ marginTop: '0.4rem' }}>
+                            <a href={getCapturaURL(sesion.captura_filename)} target="_blank" rel="noopener noreferrer">
+                              <img 
+                                src={getCapturaURL(sesion.captura_filename)} 
+                                alt="Captura" 
+                                style={{ maxHeight: '40px', borderRadius: '2px', border: '1px solid var(--oro-oscuro)', cursor: 'pointer' }}
+                              />
+                            </a>
+                          </div>
                         )}
                       </div>
                       <div className="timers-hoy__derecha">

@@ -57,21 +57,32 @@ export const API = {
   timerStart:  (libroId) => fetch(`${API_URL}/libros/${libroId}/timer/start`, { method: 'POST' }).then(handleResponse),
   timerPause:  (libroId) => fetch(`${API_URL}/libros/${libroId}/timer/pause`, { method: 'POST' }).then(handleResponse),
   timerResume: (libroId) => fetch(`${API_URL}/libros/${libroId}/timer/resume`, { method: 'POST' }).then(handleResponse),
-  timerStop:   (libroId, note) => fetch(`${API_URL}/libros/${libroId}/timer/stop`, {
-    method: 'POST',
-    body: JSON.stringify({ session_note: note || null }),
-    headers: { 'Content-Type': 'application/json' }
-  }).then(handleResponse),
+  timerStop:   (libroId, note, file) => {
+    const formData = new FormData();
+    if (note) formData.append('session_note', note);
+    if (file) formData.append('captura', file);
+    
+    return fetch(`${API_URL}/libros/${libroId}/timer/stop`, {
+      method: 'POST',
+      body: formData
+    }).then(handleResponse);
+  },
 
   // ── Active sessions ───────────────────────────────────────────────────────
   getSesionesActivas: () => fetch(`${API_URL}/sessions/active`).then(handleResponse),
 
-  // ── Session CRUD ──────────────────────────────────────────────────────────
-  editarSesion: (id, data) => fetch(`${API_URL}/sessions/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(data),
-    headers: { 'Content-Type': 'application/json' }
-  }).then(handleResponse),
+  editarSesion: (id, iniciado_en, finalizado_en, session_note, file) => {
+    const formData = new FormData();
+    if (iniciado_en !== null) formData.append('iniciado_en', iniciado_en);
+    if (finalizado_en !== null) formData.append('finalizado_en', finalizado_en);
+    if (session_note !== null) formData.append('session_note', session_note); // If empty string, backend should clear it
+    if (file) formData.append('captura', file);
+    
+    return fetch(`${API_URL}/sessions/${id}`, {
+      method: 'PUT',
+      body: formData
+    }).then(handleResponse);
+  },
   eliminarSesion: (id) => fetch(`${API_URL}/sessions/${id}`, { method: 'DELETE' }).then(handleResponse),
 
   // ── Reports ───────────────────────────────────────────────────────────────
@@ -85,5 +96,14 @@ export const API = {
 
 export const getFileURL = (filename) => {
   if (!filename) return null;
-  return `app://covers/${filename}`;
+  const isElectron = /electron/i.test(navigator.userAgent);
+  if (isElectron) return `app://covers/${filename}`;
+  return `${BASE_URL}/covers/${filename}`;
+};
+
+export const getCapturaURL = (filename) => {
+  if (!filename) return null;
+  const isElectron = /electron/i.test(navigator.userAgent);
+  if (isElectron) return `app://capturas/${filename}`;
+  return `${BASE_URL}/capturas/${filename}`;
 };

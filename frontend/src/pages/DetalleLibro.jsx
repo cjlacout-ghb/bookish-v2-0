@@ -5,13 +5,15 @@ import Estrellas from '../components/Estrellas.jsx'
 import Timer from '../components/Timer.jsx'
 import ModalNota from '../components/ModalNota.jsx'
 import ModalColeccion from '../components/ModalColeccion.jsx'
+import ModalEditarSesion from '../components/ModalEditarSesion.jsx'
 import Header from '../components/Header.jsx'
-import { API } from '../services/api.js'
+import { API, getFileURL, getCapturaURL } from '../services/api.js'
+import { formatTitle, formatAuthor } from '../services/textUtils.js'
 
 const ESTADOS_OPCIONES = [
   { valor: 'por_leer', etiqueta: 'Por leer' },
   { valor: 'leyendo',  etiqueta: 'Leyendo' },
-  { valor: 'leido',    etiqueta: 'Leído' },
+  { valor: 'leido',    etiqueta: 'Leídos' },
 ]
 
 export default function DetalleLibro() {
@@ -22,8 +24,10 @@ export default function DetalleLibro() {
   const [notas, setNotas] = useState([])
   const [cargando, setCargando] = useState(true)
   const [mostrarModal, setMostrarModal] = useState(false)
+  const [sesionEditando, setSesionEditando] = useState(null)
   const [totalSegundos, setTotalSegundos] = useState(0)
   const [sesionActiva, setSesionActiva] = useState(null)
+  const [sesiones, setSesiones] = useState([])
   const [errorNotas, setErrorNotas] = useState(false)
   const [filtroActivo, setFiltroActivo] = useState(null)
 
@@ -31,6 +35,7 @@ export default function DetalleLibro() {
     cargarLibro()
     cargarNotas()
     cargarSesionActiva()
+    cargarSesiones()
   }, [id])
 
   async function cargarLibro() {
@@ -56,6 +61,14 @@ export default function DetalleLibro() {
     }
   }
 
+  async function cargarSesiones() {
+    try {
+      const data = await API.getSesiones(id)
+      // Solo mostrar sesiones finalizadas
+      setSesiones(data.filter(s => !s.is_active))
+    } catch {}
+  }
+
   async function cargarNotas() {
     try {
       const data = await API.getNotas(id)
@@ -79,19 +92,16 @@ export default function DetalleLibro() {
 
   function onSesionGuardada(nuevoTotal) {
     setTotalSegundos(nuevoTotal)
+    cargarSesiones()
   }
 
-  async function handleCambioEstado(nuevoEstado) {
-    if (nuevoEstado === libro.estado) return
-    
-    try {
-      // Actualizamos solo el estado
-      const data = await API.actualizarLibro(id, { ...libro, estado: nuevoEstado })
-      setLibro(data)
-    } catch (err) {
-      console.error('Error al actualizar estado:', err)
-      // Opcional: mostrar mensaje de error al usuario
-    }
+  function onSesionEditada(updated) {
+    setSesiones(prev => prev.map(s => s.id === updated.id ? updated : s))
+    setSesionEditando(null)
+  }
+
+  function handleNavegarBiblioteca(nuevoFiltro) {
+    navigate('/biblioteca', { state: { filtro: nuevoFiltro } })
   }
 
   if (cargando) {
@@ -128,7 +138,7 @@ export default function DetalleLibro() {
             <div className="detalle-libro__portada">
               {libro.portada_filename ? (
                 <img
-                  src={`app://covers/${libro.portada_filename}`}
+                  src={getFileURL(libro.portada_filename)}
                   alt={`Portada de ${libro.titulo}`}
                 />
               ) : (
@@ -143,8 +153,8 @@ export default function DetalleLibro() {
               <select 
                 className={`badge-estado badge-estado-select badge-estado--${libro.estado}`}
                 value={libro.estado}
-                onChange={(e) => handleCambioEstado(e.target.value)}
-                title="Cambiar estado del libro"
+                onChange={(e) => handleNavegarBiblioteca(e.target.value)}
+                title="Ver otros libros de esta categoría"
               >
                 {ESTADOS_OPCIONES.map((op) => (
                   <option key={op.valor} value={op.valor}>
@@ -153,14 +163,14 @@ export default function DetalleLibro() {
                 ))}
               </select>
 
-              <h1 className="detalle-libro__titulo">{libro.titulo}</h1>
+              <h1 className="detalle-libro__titulo">{formatTitle(libro.titulo)}</h1>
               <p 
                 className="detalle-libro__autor texto-interactivo" 
-                onClick={() => setFiltroActivo({ tipo: 'autor', valor: libro.autor })}
-                title={`Ver más libros de ${libro.autor}`}
+                onClick={() => setFiltroActivo({ tipo: 'autor', valor: formatAuthor(libro.autor) })}
+                title={`Ver más libros de ${formatAuthor(libro.autor)}`}
                 style={{ width: 'fit-content' }}
               >
-                {libro.autor}
+                {formatAuthor(libro.autor)}
               </p>
 
               <Estrellas valor={libro.calificacion} soloLectura />
@@ -170,13 +180,22 @@ export default function DetalleLibro() {
                 {libro.genero && (
                   <div className="atributo">
                     <span className="atributo__clave">Género</span>
-                    <span 
-                      className="atributo__valor atributo__valor--interactivo"
-                      onClick={() => setFiltroActivo({ tipo: 'género', valor: libro.genero })}
-                      title={`Ver más libros del género: ${libro.genero}`}
-                    >
-                      {libro.genero}
-                    </span>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '2px' }}>
+                      {libro.genero.split(',').map((g, i, arr) => (
+                        <span key={i} style={{ display: 'flex', alignItems: 'center' }}>
+                          <span 
+                            className="atributo__valor atributo__valor--interactivo"
+                            onClick={() => setFiltroActivo({ tipo: 'género', valor: g.trim() })}
+                            title={`Ver más libros del género: ${g.trim()}`}
+                          >
+                            {formatAuthor(g.trim())}
+                          </span>
+                          {i < arr.length - 1 && (
+                            <span style={{ color: 'var(--texto-tenue)', marginLeft: '2px' }}>,</span>
+                          )}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 )}
                 {libro.formato && (
@@ -210,10 +229,10 @@ export default function DetalleLibro() {
                     </span>
                   </div>
                 )}
-                {libro.anio && (
+                {(libro.ultima_edicion_detalle || libro.anio) && (
                   <div className="atributo">
                     <span className="atributo__clave">Año</span>
-                    <span className="atributo__valor">{libro.anio}</span>
+                    <span className="atributo__valor">{libro.ultima_edicion_detalle || libro.anio}</span>
                   </div>
                 )}
                 {libro.isbn && (
@@ -326,6 +345,57 @@ export default function DetalleLibro() {
             )}
           </section>
 
+          {/* Historial de Lectura (Sesiones) */}
+          {sesiones.length > 0 && (
+            <section className="seccion-bloque" aria-label="Historial de lectura">
+              <h2 className="seccion-titulo" style={{ marginBottom: 'var(--espacio-md)' }}>◈ Historial de lectura</h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--espacio-md)' }}>
+                {sesiones.map((sesion) => (
+                  <div key={sesion.id} className="nota-item">
+                    <span className="nota-item__ornamento">⏱</span>
+                    <div className="nota-item__cuerpo">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <p className="nota-item__tipo">
+                          {new Date(sesion.iniciado_en).toLocaleDateString()} 
+                          {' - '}
+                          {Math.floor(sesion.duracion_segundos / 60)} min
+                        </p>
+                        <button 
+                          className="btn-icono" 
+                          title="Editar sesión" 
+                          onClick={() => setSesionEditando(sesion)}
+                          style={{ padding: '4px' }}
+                        >
+                          ✎
+                        </button>
+                      </div>
+                      {sesion.session_note && (
+                        <p className="nota-item__texto" style={{ marginTop: '0.2rem' }}>{sesion.session_note}</p>
+                      )}
+                      {sesion.captura_filename && (
+                        <div style={{ marginTop: 'var(--espacio-sm)' }}>
+                          <a href={getCapturaURL(sesion.captura_filename)} target="_blank" rel="noreferrer">
+                            <img 
+                              src={getCapturaURL(sesion.captura_filename)} 
+                              alt="Captura de lectura" 
+                              style={{ 
+                                maxWidth: '100%', 
+                                maxHeight: '200px', 
+                                objectFit: 'cover', 
+                                borderRadius: '4px', 
+                                border: '1px solid var(--borde-tenue)' 
+                              }}
+                            />
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
         </div>
       </main>
 
@@ -343,6 +413,15 @@ export default function DetalleLibro() {
         filtro={filtroActivo} 
         onClose={() => setFiltroActivo(null)} 
       />
+
+      {/* Modal de edición de sesión */}
+      {sesionEditando && (
+        <ModalEditarSesion
+          sesion={sesionEditando}
+          onCerrar={() => setSesionEditando(null)}
+          onGuardada={onSesionEditada}
+        />
+      )}
     </>
   )
 }
