@@ -54,7 +54,7 @@ export default function FormLibro() {
   const [errores, setErrores] = useState({})
   const [guardando, setGuardando] = useState(false)
   const [cargando, setCargando] = useState(esEdicion)
-  const [confirmEliminar, setConfirmEliminar] = useState(false)
+  const [pasoEliminar, setPasoEliminar] = useState(0) // 0: botón, 1: advertencia, 2: confirmar final
   const [formHabilitado, setFormHabilitado] = useState(!esEdicion)
 
   // Portada
@@ -608,22 +608,44 @@ export default function FormLibro() {
               
               <div className="form-libro__acciones-derecha">
                 {esEdicion && (
-                  !confirmEliminar ? (
+                  pasoEliminar === 0 ? (
                     <button
                       type="button"
                       id="btn-eliminar-libro"
                       className="btn btn-peligro"
-                      onClick={(e) => { e.preventDefault(); setConfirmEliminar(true); }}
+                      onClick={(e) => { e.preventDefault(); setPasoEliminar(1); }}
                     >
                       ✕ Eliminar
                     </button>
+                  ) : pasoEliminar === 1 ? (
+                    <div className="btn-alerta">
+                      <span className="btn-alerta__texto">
+                        ESTE LIBRO SERÁ ELIMINADO DE TU BIBLIOTECA
+                      </span>
+                      <button 
+                        type="button" 
+                        className="btn btn-sm btn-peligro" 
+                        onClick={(e) => { e.preventDefault(); setPasoEliminar(2); }}
+                        style={{ padding: '0.2rem 0.6rem', fontSize: '0.65rem' }}
+                      >
+                        CONTINUAR
+                      </button>
+                      <button 
+                        type="button" 
+                        className="btn btn-sm btn-secundario" 
+                        onClick={(e) => { e.preventDefault(); setPasoEliminar(0); }}
+                        style={{ padding: '0.2rem 0.4rem', fontSize: '0.65rem' }}
+                      >
+                        NO
+                      </button>
+                    </div>
                   ) : (
                     <div className="btn-alerta">
                       <span className="btn-alerta__texto">¿CONFIRMAR?</span>
                       <button type="button" id="btn-confirmar-eliminar" className="btn btn-sm btn-peligro" onClick={(e) => { e.preventDefault(); eliminarLibro(); }}>
                         SÍ
                       </button>
-                      <button type="button" className="btn btn-sm btn-secundario" onClick={(e) => { e.preventDefault(); setConfirmEliminar(false); }}>
+                      <button type="button" className="btn btn-sm btn-secundario" onClick={(e) => { e.preventDefault(); setPasoEliminar(0); }}>
                         NO
                       </button>
                     </div>

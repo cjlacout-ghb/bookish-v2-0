@@ -7,6 +7,7 @@ import LandingPage from './pages/LandingPage.jsx'
 import Sesiones from './pages/Timers.jsx'
 import Reportes from './pages/Reportes.jsx'
 import GuiaUsuario from './pages/GuiaUsuario.jsx'
+import BackupRestore from './pages/BackupRestore.jsx'
 import BackButton from './components/BackButton.jsx'
 
 function ScrollToTop() {
@@ -31,6 +32,7 @@ export default function App() {
         <Route path="/sesiones" element={<Sesiones />} />
         <Route path="/reportes" element={<Reportes />} />
         <Route path="/guia" element={<GuiaUsuario />} />
+        <Route path="/backup" element={<BackupRestore />} />
       </Routes>
     </Router>
   )

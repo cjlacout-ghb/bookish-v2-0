@@ -93,6 +93,33 @@ export const API = {
 
   // ── Estadísticas ──────────────────────────────────────────────────────────
   getEstadisticas: () => fetch(`${API_URL}/estadisticas`).then(handleResponse),
+
+  // ── Backup ────────────────────────────────────────────────────────────────
+  importarBackup: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return fetch(`${API_URL}/backup/import`, {
+      method: 'POST',
+      body: formData
+    }).then(handleResponse);
+  },
+  descargarBackup: () => {
+    return fetch(`${API_URL}/backup/export`).then(async (res) => {
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || "Error al descargar el backup");
+      }
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'bookish_backup.zip';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    });
+  }
 };
 
 export const getFileURL = (filename) => {

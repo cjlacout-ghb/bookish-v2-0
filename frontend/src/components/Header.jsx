@@ -49,6 +49,11 @@ function Header() {
       </nav>
 
       <div className="landing-actions">
+        <Link to="/backup" title="Importar / Exportar Biblioteca" style={{ color: 'inherit', textDecoration: 'none', marginRight: '1rem' }}>
+          <span className="material-symbols-outlined nav-icon" data-icon="cloud">
+            cloud
+          </span>
+        </Link>
         <Link to="/guia" title="Guía de Usuario" style={{ color: 'inherit', textDecoration: 'none' }}>
           <span className="material-symbols-outlined nav-icon" data-icon="menu_book">
             menu_book
